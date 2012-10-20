@@ -1,0 +1,11 @@
+{
+  "name": "tweetstreet",
+  "description": "A Stock Exchange for Twitter Accounts",
+  "author": "Louis Stowasser",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "3.0.0rc3",
+		"mongodb": "1.1.11",
+		"mongoose": "3.3.1"
+  }
+}
