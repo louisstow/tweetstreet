@@ -10,6 +10,6 @@ var tradeSchema = new mongoose.Schema({
 }, {_id: false});
 
 //export the db model
-exports = function(db) {
+module.exports = function(db) {
 	return db.model('Trade', tradeSchema);
 }

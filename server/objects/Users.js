@@ -7,6 +7,6 @@ var userSchema = new mongoose.Schema({
 });
 
 //export the db model
-exports = function(db) {
+module.exports = function(db) {
 	return db.model('User', userSchema);
 }

@@ -1,25 +1,33 @@
 var mongoose = require('mongoose');
 var express = require("express");
+var ff = require("ff");
 var app = express();
 
-//create the mongodb connection
-var db = mongoose.createConnection('localhost', 'tweetdb');
+/**
+* Initialise Express
+*/
+app.use(express.bodyParser());
+app.use(express.static("./src"));
 
-//return the db model
-var User = require("./objects/User")(db);
+app.listen(5657);
+
+/**
+* Initialise Mongodb
+*/
+var db = mongoose.createConnection('localhost', 'tweetdb');
 
 //log all errors
 db.on('error', console.error.bind(console, 'connection error:'));
 
 db.once('open', function () {
-  // yay!
-  console.log("yay!");
+	//return the db model
+	console.log("DATABASE CONNECTED");
 });
 
-app.post("/user/", function (req, res, err) {
-	console.log("POST USER", req.body);
-	res.send(200);
+/**
+* Load each api
+*/
+["stock", "user", "trading", "history"].forEach(function (i, api) {
+	//import api and run the load function
+	require("./api/" + api).load(app, db);
 });
-
-app.use(express.static("./src"));
-app.listen(5657);
