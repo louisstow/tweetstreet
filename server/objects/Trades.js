@@ -2,12 +2,13 @@ var mongoose = require("mongoose");
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
 var tradeSchema = new mongoose.Schema({
-	stock: ObjectId,
+	stock: String,
+	buyer: String,
+	seller: String,
+
 	quantity: Number,
-	cost: Number,
-	buyer: ObjectId,
-	seller: ObjectId
-}, {_id: false});
+	cost: Number	
+});
 
 //export the db model
 module.exports = function(db) {

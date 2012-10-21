@@ -1,8 +1,14 @@
+var ff = require("ff");
+
 exports.load = function (app, db) {
 //start load
 
 var User = require("../objects/Users")(db);
+var Stock = require("../objects/Stocks")(db);
+var Selling = require("../objects/Selling")(db);
 var twitter = require("../twitter");
+
+var stock = require("./stock").load(app, db);
 
 /**
 * Register user
@@ -19,23 +25,27 @@ app.post("/api/user/", function (req, res, err) {
 		);
 	}, function (exists) {
 		if (exists.length) {
-			console.log("User exists", exists)
-			res.json({error: "Username or email address taken", code: 50});
+			this.fail({error: "Username or email address taken", code: 50});
 			return;
 		}
-
-		twitter.getAccount(body.twitter, this.slot());
-	}, function (account) {
-
+		
 		//create a user object
 		var user = new User({
-			name: body.name,
+			_id: body.name,
 			pass: body.pass,
-			email: body.email
+			email: body.email,
+			money: 10000
 		});
 
 		user.save();
+
+		//create the stock from the twitter handle
+		stock.create({twitter: body.twitter});
+
 		res.send(200);
+	}).error(function (e) {
+		console.log(e);
+		res.json(e);
 	});
 });
 
@@ -48,7 +58,6 @@ app.get("/api/user/", function (req, res) {
 		console.log("GET USERS", result);
 		res.json(result);	
 	});
-	
 });
 
 //end load

@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 var express = require("express");
-var ff = require("ff");
 var app = express();
 
 /**
@@ -27,7 +26,7 @@ db.once('open', function () {
 /**
 * Load each api
 */
-["stock", "user", "trading", "history"].forEach(function (i, api) {
+["stock", "user", "trading", "history"].forEach(function (api, i) {
 	//import api and run the load function
 	require("./api/" + api).load(app, db);
 });

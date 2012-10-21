@@ -7,10 +7,8 @@ var twit = new twitter({
 	access_token_secret: '1xIz7H4QUqhnWLsegsn9k1i1xsiIcVJQIGLqh5T8'
 });
 
-exports = {
-	getAccount: function (name, cb) {
-		twit.get('/users/show.json', {screen_name: name, include_entities: 'true'}, function(data) {
-			cb(JSON.parse(data));
-		});
-	}
-};
+exports.getAccount = function (name, cb) {
+	twit.get('/users/show.json', {screen_name: name, include_entities: 'true'}, function(data) {
+		cb(data);
+	});
+}
