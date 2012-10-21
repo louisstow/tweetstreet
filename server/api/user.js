@@ -60,5 +60,23 @@ app.get("/api/user/", function (req, res) {
 	});
 });
 
+/**
+* Login system
+*/
+app.post("/api/user/login/", function (req, res) {
+	var user = req.body.user;
+	var pass = req.body.pass;
+
+	User.findOne({_id: user, pass: pass}, function (err, result) {
+		if (result) {
+			req.session.user = user;
+			res.send(200);
+		} else {
+			console.log("NO USER", result, user, pass);
+			res.json({error: "No user found"});
+		}
+	});
+});
+
 //end load
 };

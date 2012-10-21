@@ -5,8 +5,12 @@ var app = express();
 /**
 * Initialise Express
 */
-app.use(express.bodyParser());
+
+app.use(express.cookieParser('mysecrettweet'));
+app.use(express.cookieSession({secret: "mysecrettweet"}));
+app.use(express.session());
 app.use(express.static("./src"));
+app.use(express.bodyParser());
 
 app.listen(5657);
 
