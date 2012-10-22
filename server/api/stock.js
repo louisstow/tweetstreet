@@ -104,7 +104,35 @@ app.get("/api/stock", function (req, res) {
 	Portfolio.find({user: req.session.user}, function (err, resp) {
 		if (err) {
 			res.json({error: "User not found", code: err});
-		} else res.json(resp);
+		} else {
+			var data = [];
+
+			var f = ff(this, function() {
+				for(var i = 0; i < resp.length; ++i) {
+					data[i] = {
+						stock: resp[i].stock,
+						user: resp[i].user,
+						quantity: resp[i].quantity,
+						paid: resp[i].paid,
+						date: resp[i].date
+					};
+
+					//closure this shit
+					(function(i) {
+						var wait = f.wait();
+						
+						Stock.findById(resp[i].stock, function (err, stockData) {
+							data[i].image = stockData.image;
+							data[i].currentPrice = stockData.price;
+						
+							wait();
+						});
+					})(i);
+				}
+			}, function () {
+				res.json(data);
+			});
+		}
 	});
 });
 

@@ -98,12 +98,12 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 
 				total += unit.cost * quantity;
 				trade.save();
-				return false;
+				break;
 			//if more than 0, take all of it
 			} else if(unit.quantity > 0) {
 				//amount left to buy
 				currentQuantity -= unit.quantity;
-				
+
 				buy.quantity = currentQuantity;
 				buy.save();
 				Selling.remove({_id: unit._id});
@@ -137,7 +137,9 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 			}
 		}
 
-		Users.update({_id: user}, {"$dec": {money: total}});
+		Users.update({_id: user}, {"$inc": {money: -total}}, function() {
+			console.log("\nLOSE MONEY", arguments);
+		});
 		cleanup();
 	}).cb(cb);
 };
