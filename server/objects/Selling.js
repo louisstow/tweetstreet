@@ -1,8 +1,8 @@
 var mongoose = require("mongoose");
 
 var sellingSchema = new mongoose.Schema({
-	stock: {type: String, index: {unique: true}},
-	seller: {type: String, index: {unique: true}},
+	stock: String,
+	seller: String,
 	quantity: Number,
 	cost: Number
 });

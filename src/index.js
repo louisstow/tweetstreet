@@ -1,54 +1,130 @@
-$(function () {
-	//open the main page
-	if (window.location.hash) 
-		openPage(window.location.hash.substr(1), function (args) {
-			//error loading page
-			if (args[0][1] === "error") {
-				openPage("404");
-			}
-		});
+var form = {
+	"login": {url: "user/login/", success: onLogin},
+	"register": {url: "user/", success: onRegister},
+};
 
-	//parse main page
+//query object
+var QUERY;
+var ME;
+
+$(function () {
+	//parse main page first
 	parseTemplates(document.body, function() {
 		parseForms(document.body);
 	});
 
-	init();
+	//open the main page
+	if (window.location.hash) {
+		openPage(window.location.hash.substr(1), function (args) {
+			//error loading page
+			if (args[1] === "error") {
+				openPage("404", init);
+			}
+
+			init();
+		});
+	} else {
+		//open the home page
+		openPage("home", init);		
+	}
 });
 
 function init () {
+	api({
+		url: "user/logged/",
+		method: "GET",
+		success: function (resp) {
+			if (!resp.error) {
+				postLogin(resp)
+			}
+		}
+	});
 
+	$("a").live("click", function (e) {
+		var target = $(this).attr("href");
+		if (target && target.charAt(0) === "#") {
+			openPage(target.substr(1));
+		}
+		return true;
+	});
+
+	$("a.login").click(function() {
+		$("#login").toggle();
+	});
+
+	$("a.register").click(function() {
+		$("#register").toggle();
+	});
 }
 
-function onLogin () {
+function postLogin(user) {
+	$("#register, #login, a.register, a.login").hide();
+	$("#welcome").show()
+	$("#welcome span").text([
+		"On the floor,",
+		user.user,
+		"$" + formatMoney(user.money)
+	].join(" "));
 
+	ME = user;
 }
 
-function onRegister () {
-	
+function onLogin (resp) {
+	if (resp.error) {
+		showError(resp.error);
+	} else {
+		postLogin(resp);
+	}
+}
+
+function onRegister (resp) {
+	postLogin(resp)
 }
 
 function openPage (url, cb) {
-	var wait = callback(cb);
-	$("#main").load("./templates/" + url + ".html", wait());
+	var $main = $("#main");
 
-	var script = wait();
-	$.getScript("./scripts/" + url + ".js", script).fail(script);
+	if (url.indexOf('/') !== -1) {
+		var splat = url.split("/");
+		url = splat[0];
+		QUERY = splat.slice(1);
+	}
+
+	$main.load("./templates/" + url + ".html", function () {
+		var args = arguments;
+
+		$.getScript("./scripts/" + url + ".js", function () {
+			//parse the templates
+			parseTemplates($main, function () {
+				cb && cb.apply(null, args);
+
+				//parse any forms
+				parseForms($main);
+			});
+		});
+	});
 }
 
 function api (opts) {
 	//default error handler
 	opts.error = opts.error || showError;
 
-	$.ajax({
-		type: "POST",
+	var data = {
+		type: opts.method || "POST",
 		url: "/api/" + opts.url,
-		data: opts.data,
-		contentType: "json",
+		data: JSON.stringify(opts.data),
+		contentType: "application/json",
 		dataType: "json",
 		success: opts.success,
 		error: opts.error
-	});
+	};
+
+	if (opts.method === "GET") {
+		delete data.data;
+		delete data.contentType;
+	}
+
+	$.ajax(data);
 }
 
 function callback (cb) {
@@ -68,18 +144,16 @@ function callback (cb) {
 function parseTemplates (parent, cb) {
 	var wait = callback(cb);
 
-	$("section", parent).each(function () {
+	var search = $("section", parent);
+	if (!search.length) return wait()();
+
+	search.each(function () {
 		var templ = $(this).attr("class");
 		$(this).load("./templates/" + templ + ".html", wait());
 	});
 }
 
 function parseForms (parent) {
-	var form = {
-		"login": {url: "/user/login/", success: onLogin},
-		"register": {url: "/user/", success: onRegister},
-	};
-
 	//docready
 	$("div.form", parent).each(function () {
 		var type = $(this).attr("id");
@@ -98,4 +172,23 @@ function parseForms (parent) {
 			api(endpoint);
 		});
 	});
+}
+
+function showError(err) {
+	console.error(err);
+}
+
+function formatMoney(n, d, t) {
+	var c = 2, //if decimal is zero we must take it, it means user does not want to show any decimal
+	d = d || '.'; //if no decimal separator is passed we use the dot as default decimal separator (we MUST use a decimal separator)
+
+	t = t || ','; //if you don't want to use a thousands separator you can pass empty string as thousands_sep value
+
+	sign = (n < 0) ? '-' : '',
+
+	//extracting the absolute value of the integer part of the number and converting to string
+	i = parseInt(n = Math.abs(n).toFixed(c)) + '', 
+
+	j = ((j = i.length) > 3) ? j % 3 : 0; 
+	return sign + (j ? i.substr(0, j) + t : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : ''); 
 }

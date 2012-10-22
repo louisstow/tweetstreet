@@ -5,6 +5,7 @@ var Buying = require('../objects/Buying')(db);
 var Selling = require('../objects/Selling')(db);
 var Trades = require('../objects/Trades')(db);
 var Users = require('../objects/Users')(db);
+var Portfolio = require('../objects/Portfolio')(db);
 var ff = require("ff");
 
 //trade types
@@ -16,18 +17,21 @@ function cleanup () {
 	Buying.remove({quantity: 0});
 }
 
-exports.buy = function(stock, user, quantity, cost) {
+exports.buy = function(stock, user, quantity, cost, cb) {
 	
 	var currentQuantity = quantity;
-	var totalPrice = 0;
+	var total = 0;
 
 	ff(function () {
+		console.log("26")
 		Users.findOne({_id: user}, this.slot());
 	}, function (userData) {
+		console.log("29")
 		if (userData.money < cost * quantity) {
 			this.fail({error: "Not enough money"});
 			return;
 		}
+		console.log("34")
 
 		var buy = new Buying({
 			stock: stock,
@@ -36,16 +40,17 @@ exports.buy = function(stock, user, quantity, cost) {
 			cost: cost
 		});
 		buy.save(this.slot());
-
+		console.log("43")
 		//find any units selling for less than or equal to
 		//our price
 		Selling.find({
-			_id: stock, 
-			price: {$lte: cost},
+			stock: stock, 
+			cost: {$lte: cost},
 			quantity: {$gt: 0}
 		}, this.slot());
 	}, function (buy, data) {
 		//if no stocks found in our price range
+		console.log("53", data.length)
 		if (!data.length) {
 			this.fail({error: "No stocks found"});
 			return;
@@ -59,27 +64,62 @@ exports.buy = function(stock, user, quantity, cost) {
 			//if enough quantity
 			if (unit.quantity >= currentQuantity) {
 				//remove bids from market
-				Buying.remove({_id: buy._id});
-				Selling.update({_id: unit._id, quantity: unit.quantity - currentQuantity});
+				console.log("ENOUGH quantity", unit.quantity - currentQuantity, unit.id, unit._id);
+				buy.remove();
+				unit.quantity = unit.quantity - currentQuantity;
+				unit.save(function(err) {
+					console.log("UPDATE YOU PRICK", arguments);
+				});
+				
+				//update the trading price
+				Stock.update({_id: stock}, {
+					price: unit.cost,
+					priceDiff: unit.cost - unit.dayPrice
+				}, function(){});
 
+				//save it in the portfolio
+				Portfolio.create({
+					stock: stock,
+					user: user,
+					quantity: quantity, 
+					paid: unit.cost, 
+					date: Date.now()
+				}, function(){});
+
+				//log the trade
 				var trade = new Trades({
 					stock: stock,
 					buyer: user,
 					seller: unit.seller,
 					quantity: quantity,
-					cost: unit.price
+					cost: unit.cost,
+					date: Date.now()
 				});
 
-				total += unit.price * quantity;
+				total += unit.cost * quantity;
 				trade.save();
 				return false;
 			//if more than 0, take all of it
 			} else if(unit.quantity > 0) {
 				//amount left to buy
 				currentQuantity -= unit.quantity;
-
-				Buying.update({_id: buy.id, quantity: currentQuantity});
+				
+				buy.quantity = currentQuantity;
+				buy.save();
 				Selling.remove({_id: unit._id});
+
+				Stock.update({_id: stock}, {
+					price: unit.cost,
+					priceDiff: unit.cost - unit.dayPrice
+				});
+				
+				Portfolio.create({
+					stock: stock,
+					user: user,
+					quantity: unit.quantity, 
+					paid: unit.cost, 
+					date: Date.now()
+				});
 				
 				//new trade
 				var trade = new Trades({
@@ -87,10 +127,11 @@ exports.buy = function(stock, user, quantity, cost) {
 					buyer: user,
 					seller: unit.seller,
 					quantity: unit.quantity,
-					cost: unit.price
+					cost: unit.cost,
+					date: Date.now()
 				});
 
-				total += unit.price * unit.quantity;
+				total += unit.cost * unit.quantity;
 
 				trade.save();
 			}
@@ -98,10 +139,7 @@ exports.buy = function(stock, user, quantity, cost) {
 
 		Users.update({_id: user}, {"$dec": {money: total}});
 		cleanup();
-	}).error(function(e) {
-		console.error(e);
-		throw e;
-	});
+	}).cb(cb);
 };
 
 exports.sell = function(stock, user, quantity, cost) {
@@ -124,16 +162,23 @@ app.post("/api/trading/buy/", function (req, res) {
 		return res.json({error: "Please login"});
 	}
 
-	try {
-		exports.buy(
-			req.body.stock,
-			req.session.user,
-			req.body.quantity,
-			req.body.cost
-		);
-	} catch(e) {
-		res.json(e);
+	if (!req.body.stock || !req.body.quantity || !req.body.cost) {
+		return res.json({error: "Incorrect arguments"});
 	}
+
+	exports.buy(
+		req.body.stock,
+		req.session.user,
+		+req.body.quantity || 0,
+		+req.body.cost || 0,
+		function (err) {
+			console.log("\n\n\n\nBUY", arguments);
+			if (err) res.json({error: err})
+			else res.send(200);
+		}
+	);
+
+
 });
 
 return exports;

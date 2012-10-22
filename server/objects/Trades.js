@@ -7,7 +7,8 @@ var tradeSchema = new mongoose.Schema({
 	seller: String,
 
 	quantity: Number,
-	cost: Number	
+	cost: Number,
+	date: Date	
 });
 
 //export the db model

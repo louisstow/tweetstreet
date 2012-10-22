@@ -6,6 +6,8 @@ var stockSchema = new mongoose.Schema({
 	followers: Number,
 	following: Number,
 	price: Number,
+	dayPrice: Number,
+	priceDiff: Number,
 	image: String
 }, {_id: false});
 
