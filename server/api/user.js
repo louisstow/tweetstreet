@@ -72,10 +72,10 @@ app.post("/api/user/login/", function (req, res) {
 	var user = req.body.user;
 	var pass = req.body.pass;
 
-	conn.query("SELECT userID, money, email FROM users WHERE ? AND ? LIMIT 1", {
-		userName: user,
-		pass: pass
-	}, function (err, result) {
+	conn.query("SELECT userID, money, email FROM users WHERE ? AND ? LIMIT 1", [
+		{userName: user},
+		{pass: pass}
+	], function (err, result) {
 		console.log("POST LOGIN", err, result);
 
 		if (result.length) {

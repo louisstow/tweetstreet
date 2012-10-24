@@ -1,20 +1,17 @@
-exports.load = function (app, db) {
-
-var Stock = require('../objects/Stocks')(db);
-var Buying = require('../objects/Buying')(db);
-var Selling = require('../objects/Selling')(db);
-var Trades = require('../objects/Trades')(db);
-var Users = require('../objects/Users')(db);
-var Portfolio = require('../objects/Portfolio')(db);
 var ff = require("ff");
+
+exports.load = function (opts) {
+
+var app = opts.app;
+var conn = opts.conn;
 
 //trade types
 var BUYING  = 0;
 var SELLING = 0;
 
 function cleanup () {
-	Selling.remove({quantity: 0});
-	Buying.remove({quantity: 0});
+	conn.query("DELETE FROM selling WHERE quantity = 0");
+	conn.query("DELETE FROM buying WHERE quantity = 0");
 }
 
 exports.buy = function(stock, user, quantity, cost, cb) {
@@ -23,34 +20,34 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 	var total = 0;
 
 	ff(function () {
-		console.log("26")
-		Users.findOne({_id: user}, this.slot());
+		
+		conn.query("SELECT * FROM users WHERE ? LIMIT 1", {
+			userID: user
+		}, this.slot());
 	}, function (userData) {
-		console.log("29")
+		userData = userData[0];
 		if (userData.money < cost * quantity) {
 			this.fail({error: "Not enough money"});
 			return;
 		}
-		console.log("34")
 
-		var buy = new Buying({
-			stock: stock,
-			buyer: user,
-			quantity: quantity,
-			cost: cost
-		});
-		buy.save(this.slot());
-		console.log("43")
+		//insert into buying
+		conn.query("INSERT INTO buying VALUES (DEFAULT, ?)", [[
+			stock,
+			user,
+			quantity,
+			cost.toFixed(5)
+		]], this.slot());
+
 		//find any units selling for less than or equal to
 		//our price
-		Selling.find({
-			stock: stock, 
-			cost: {$lte: cost},
-			quantity: {$gt: 0}
-		}, this.slot());
+		conn.query("SELECT * FROM selling WHERE stockID=? AND cost <= ? AND quantity > 0", [
+				stock,
+				cost
+		], this.slot());
+		
 	}, function (buy, data) {
 		//if no stocks found in our price range
-		console.log("53", data.length)
 		if (!data.length) {
 			this.fail({error: "No stocks found"});
 			return;
@@ -58,101 +55,96 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 
 		var unit;
 		//loop over all available stocks
-		for(var i = 0; i < data.length; ++i) {
+		for (var i = 0; i < data.length; ++i) {
 			unit = data[i];
 
 			//if enough quantity
 			if (unit.quantity >= currentQuantity) {
 				//remove bids from market
 				console.log("ENOUGH quantity", unit.quantity - currentQuantity, unit.id, unit._id);
-				buy.remove();
-				unit.quantity = unit.quantity - currentQuantity;
-				unit.save(function(err) {
-					console.log("UPDATE YOU PRICK", arguments);
-				});
+
+				conn.query("DELETE FROM buying WHERE ? LIMIT 1", {tradeID: buy.insertId});
+				conn.query("UPDATE selling SET quantity = quantity - ? WHERE ?", [
+					currentQuantity,
+					{tradeID: unit.tradeID}
+				]);
 				
-				//update the trading price
-				Stock.update({_id: stock}, {
-					price: unit.cost,
-					priceDiff: unit.cost - unit.dayPrice
-				}, function(){});
+				//update sale price
+				conn.query("UPDATE stocks SET ? WHERE ?", [
+					{cost: unit.cost},
+					{stockID: stock}
+				]);
 
-				//save it in the portfolio
-				Portfolio.create({
-					stock: stock,
-					user: user,
-					quantity: quantity, 
-					paid: unit.cost, 
-					date: Date.now()
-				}, function(){});
+				conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
+					stock,
+					user,
+					quantity,
+					unit.cost,
+					new Date
+				]]);
 
-				//log the trade
-				var trade = new Trades({
-					stock: stock,
-					buyer: user,
-					seller: unit.seller,
-					quantity: quantity,
-					cost: unit.cost,
-					date: Date.now()
-				});
+				conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
+					stock,
+					user,
+					unit.sellerID,
+					quantity,
+					unit.cost,
+					new Date
+				]]);
 
 				total += unit.cost * quantity;
-				trade.save();
+				
 				break;
 			//if more than 0, take all of it
 			} else if(unit.quantity > 0) {
 				//amount left to buy
 				currentQuantity -= unit.quantity;
 
-				buy.quantity = currentQuantity;
-				buy.save();
-				Selling.remove({_id: unit._id});
+				conn.query("UPDATE buying SET ? WHERE ?", [
+					{quantity: currentQuantity},
+					{tradeID: buy.insertId}
+				]);
 
-				Stock.update({_id: stock}, {
-					price: unit.cost,
-					priceDiff: unit.cost - unit.dayPrice
+				conn.query("DELETE FROM selling WHERE ? LIMIT 1", {
+					tradeID: unit.tradeID
 				});
-				
-				Portfolio.create({
-					stock: stock,
-					user: user,
-					quantity: unit.quantity, 
-					paid: unit.cost, 
-					date: Date.now()
-				});
-				
-				//new trade
-				var trade = new Trades({
-					stock: stock,
-					buyer: user,
-					seller: unit.seller,
-					quantity: unit.quantity,
-					cost: unit.cost,
-					date: Date.now()
-				});
+
+				conn.query("UPDATE stocks SET ? WHERE ?", [
+					{cost: unit.cost},
+					{stockID: stock}
+				]);
+
+				conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
+					stock,
+					user,
+					quantity,
+					unit.cost,
+					new Date
+				]]);
+
+				conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
+					stock,
+					user,
+					unit.sellerID,
+					quantity,
+					unit.cost,
+					new Date
+				]]);
 
 				total += unit.cost * unit.quantity;
-
-				trade.save();
 			}
 		}
 
-		Users.update({_id: user}, {"$inc": {money: -total}}, function() {
-			console.log("\nLOSE MONEY", arguments);
-		});
+		conn.query("UPDATE users SET money = money - ? WHERE ?", [
+			total,
+			{userID: user}
+		]);
+
 		cleanup();
 	}).cb(cb);
 };
 
 exports.sell = function(stock, user, quantity, cost) {
-	var sell = new Selling({
-		stock: stock,
-		buyer: user,
-		quantity: quantity,
-		cost: cost
-	});
-
-	sell.save();
 
 };
 
@@ -170,7 +162,7 @@ app.post("/api/trading/buy/", function (req, res) {
 
 	exports.buy(
 		req.body.stock,
-		req.session.user,
+		req.session.userID,
 		+req.body.quantity || 0,
 		+req.body.cost || 0,
 		function (err) {

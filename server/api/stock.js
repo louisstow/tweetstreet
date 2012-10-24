@@ -75,6 +75,8 @@ exports.get = function(id, cb) {
 			return;
 		}
 
+		result = result[0];
+
 		var data = {
 			tweets: account.statuses_count,
 			followers: account.followers_count,
@@ -155,7 +157,7 @@ app.get("/api/stock/top/:limit", function (req, res) {
 
 app.get("/api/stock/trending/:limit", function (req, res) {
 	var limit = Math.min(MAX_RECORDS, req.params.limit || 10);
-	conn.query("SELECT * FROM stocks ORDER BY (dayCost - cost) desc LIMIT ?", limit, function (err, result) {
+	conn.query("SELECT * FROM stocks ORDER BY (cost - dayCost) desc LIMIT ?", limit, function (err, result) {
 		console.log("SORTED", result);
 		res.json(result);
 	});

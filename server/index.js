@@ -23,7 +23,7 @@ var connString = "mysql://root@localhost/tweetdb";
 var connection = mysql.createConnection(connString);
 
 //for each api, require it and pass in the objects
-var apis = ["stock", "user", /*"trading",*/ "history"];
+var apis = ["stock", "user", "trading", "history"];
 apis.forEach(function (api, i) {
 	//import api and run the load function
 	require("./api/" + api).load({
