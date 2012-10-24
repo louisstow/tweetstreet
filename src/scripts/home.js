@@ -13,12 +13,12 @@ api({
 		for(var i = 0; i < resp.length; ++i) {
 			stock = resp[i];
 			html += "<li>";
-			html += "<a href='#stock/" + stock._id + "'>";
+			html += "<a href='#stock/" + stock.stockID + "'>";
 			html += "<img src='" + stock.image + "'> ";
-			html += stock._id + "</a> ";
-			html += "<span class='price'>$" + formatMoney(stock.price) + "</span>";
+			html += stock.stockID + "</a> ";
+			html += "<span class='price'>$" + formatMoney(stock.cost) + "</span>";
 
-			var diff = stock.price - stock.dayPrice;
+			var diff = stock.cost - stock.dayCost;
 			var arrow = diff < 0 ? "▼" : "▲";
 			var color = diff < 0 ? "red" : "green";
 			html += "<span class='diff " + color + "'>" + arrow + " $" + formatMoney(diff) + "</span>";
@@ -41,12 +41,12 @@ api({
 		for(var i = 0; i < resp.length; ++i) {
 			stock = resp[i];
 			html += "<li>";
-			html += "<a href='#stock/" + stock._id + "'>"
+			html += "<a href='#stock/" + stock.stockID + "'>"
 			html += "<img src='" + stock.image + "'> ";
-			html += stock._id + "</a> ";
-			html += "<span class='price'>$" + formatMoney(stock.price) + "</span>";
+			html += stock.stockID + "</a> ";
+			html += "<span class='price'>$" + formatMoney(stock.cost) + "</span>";
 
-			var diff = stock.price - stock.dayPrice;
+			var diff = stock.cost - stock.dayCost;
 			var arrow = diff < 0 ? "▼" : "▲";
 			var color = diff < 0 ? "red" : "green";
 			html += "<span class='diff " + color + "'>" + arrow + " $" + formatMoney(diff) + "</span>";

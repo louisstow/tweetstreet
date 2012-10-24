@@ -1,14 +1,13 @@
-var mongoose = require('mongoose');
 var express = require("express");
 var fs = require("fs");
 var path = require("path");
+var mysql = require("mysql");
 var app = express();
 
 
 /**
 * Initialise Express
 */
-
 app.use(express.cookieParser('mysecrettweet'));
 app.use(express.session({secret: "mysecrettweet", cookie: {maxAge: null}}));
 
@@ -18,32 +17,18 @@ app.use(express.bodyParser());
 app.listen(5657);
 
 /**
-* Initialise Mongodb
+* Initialise MySQL
 */
-var db = mongoose.createConnection('localhost', 'tweetdb');
+var connString = "mysql://root@localhost/tweetdb";
+var connection = mysql.createConnection(connString);
 
-//log all errors
-db.on('error', console.error.bind(console, 'connection error:'));
-
-db.once('open', function () {
-	//return the db model
-	console.log("DATABASE CONNECTED");
-});
-
-var User = require("./objects/Users")(db);
-
-var bot = new User({
-	_id: "TweetStreet",
-	pass: "StreetTweet",
-	money: 10000
-});
-
-bot.save();
-
-/**
-* Load each api
-*/
-["stock", "user", "trading", "history"].forEach(function (api, i) {
+//for each api, require it and pass in the objects
+var apis = ["stock", "user", /*"trading",*/ "history"];
+apis.forEach(function (api, i) {
 	//import api and run the load function
-	require("./api/" + api).load(app, db);
+	require("./api/" + api).load({
+		app: 		app,
+		conn: 		connection
+	});
 });
+

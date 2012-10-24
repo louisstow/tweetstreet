@@ -1,13 +1,16 @@
-var mongoose = require("mongoose");
-
-var sellingSchema = new mongoose.Schema({
-	stock: String,
-	seller: String,
-	quantity: Number,
-	cost: Number
-});
-
 //export the db model
 module.exports = function(db) {
-	return db.model('Selling', sellingSchema);
+	
+	var Selling = db.define("selling", {
+		"tradeID": Number,
+		"stockID": String,
+		"sellerID": Number,
+		"quantity": Number,
+		"cost": Number,
+		"created": Date
+	});
+
+	Selling.sync();
+
+	return Selling;
 }

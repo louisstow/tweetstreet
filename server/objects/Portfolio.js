@@ -1,14 +1,16 @@
-var mongoose = require("mongoose");
-
-var portfolioSchema = new mongoose.Schema({
-    stock: String,
-    user: String,
-    quantity: Number, 
-    paid: Number, 
-    date: Date
-});
-
 //export the db model
 module.exports = function(db) {
-	return db.model('Portfolio', portfolioSchema);
+	
+	var Portfolio = db.define("portfolio", {
+		"portfolioID": Number,
+		"stockID": String,
+		"userID": Number,
+		"quantity": Number,
+		"cost": Number,
+		"created": Date
+	});
+
+	Portfolio.sync();
+
+	return Portfolio;
 }

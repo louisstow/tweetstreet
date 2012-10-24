@@ -1,18 +1,16 @@
-var mongoose = require("mongoose");
-
-var userSchema = new mongoose.Schema({
-    _id: {type: String, index: {unique: true}},
-    email: String,
-    pass: String,
-    money: Number
-}, {_id: false});
-
-//virtual name
-userSchema.virtual('name').get(function () {
-	return this._id;
-});
-
 //export the db model
 module.exports = function(db) {
-	return db.model('User', userSchema);
+	
+	var User = db.define("users", {
+		"userID": Number,
+		"userName": String,
+		"email": String,
+		"pass": String,
+		"money": Number,
+		"created": Date
+	});
+
+	User.sync();
+
+	return User;
 }

@@ -2,12 +2,10 @@ var ff = require("ff");
 var twitter = require("../twitter");
 var MAX_RECORDS = 50;
 
-exports.load = function (app, db) {
+exports.load = function (opts) {
 
-var Stock = require('../objects/Stocks')(db);
-var Selling = require('../objects/Selling')(db);
-var Users = require('../objects/Users')(db);
-var Portfolio = require('../objects/Portfolio')(db);
+var app = opts.app;
+var conn = opts.conn;
 
 /**
 * Create a Stock
@@ -29,29 +27,34 @@ exports.create = function(opts, cb) {
 
 		//create the data to save
 		var data = {
+			stockID: opts.twitter,
 			tweets: account.statuses_count,
 			followers: account.followers_count,
 			following: account.friends_count,
-			price: IPO,
-			dayPrice: 0,
-			priceDiff: IPO,
-			image: account.profile_image_url,
-			_id: opts.twitter
+			cost: IPO.toFixed(5),
+			dayCost: 0,
+			image: account.profile_image_url
 		};
 
+		//grab the values
+		var values = [];
+		for (var key in data) 
+			if (data.hasOwnProperty(key)) values.push(data[key]);
+
 		//upsert stock
-		Stock.create(data, function (err, num, r) {
-			console.log("\n\n\nCREATE", arguments)
-			//insert the new selling stocks
-			Selling.create({
-				stock: opts.twitter,
-				quantity: 100000,
-				cost: IPO,
-				seller: "TweetStreet"
-			}, function() {
-				console.log("\n\n\n\nSELLING", arguments)
-			});
+		var q = conn.query("INSERT INTO stocks VALUES (?)", [values], function (err, result) {
+			console.log("\n\n\nCREATE", arguments, values);
+			if (err) return;
+
+			conn.query("INSERT INTO selling VALUES (DEFAULT, ?)", [[
+				opts.twitter,
+				1, //PLEASE MAKE SURE TWEETSTREET = 1
+				100000,
+				IPO.toFixed(5),
+				new Date
+			]]);
 		});
+		console.log("SQL", q.sql)
 
 		data._id = opts.twitter;
 		cb && cb(data);
@@ -61,9 +64,12 @@ exports.create = function(opts, cb) {
 exports.get = function(id, cb) {
 	ff(function() {
 		twitter.getAccount(id, this.slotPlain());
-		Stock.findOne({_id: id}, this.slot());
+		
+		conn.query("SELECT * FROM stocks WHERE ? LIMIT 1", {
+			stockID: id
+		}, this.slot());
 	}, function(account, result) {
-		if (!account || !result) {
+		if (!account || !result.length) {
 			console.log("NULL", account, result, arguments);
 			cb && cb(null);
 			return;
@@ -76,13 +82,13 @@ exports.get = function(id, cb) {
 			image: account.profile_image_url
 		};
 
-		Stock.update({_id: result._id}, data);
+		//update the database with the new data
+		conn.query("UPDATE stocks SET ?", data);
 		
 		//copy data from various sources
-		data.price = result.price;
-  		data.dayPrice = result.dayPrice;
- 		data.priceDiff = result.priceDiff;
-  		data._id = result._id;
+		data.cost = result.cost;
+  		data.dayCost = result.dayCost;
+  		data.stockID = result.stockID;
 		data.status = account.status.text;
 		data.description = account.description;
 
@@ -96,43 +102,21 @@ exports.get = function(id, cb) {
 * Get my stock
 */
 app.get("/api/stock", function (req, res) {
-	if (!req.session.user) {
+	if (!req.session.userID) {
 		res.json({error: "User not found"});
 		return;
 	}
 
-	Portfolio.find({user: req.session.user}, function (err, resp) {
+	conn.query("SELECT p.*, s.image, s.cost as currentPrice \
+				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
+		userID: req.session.userID
+	}, function (err, result) {
 		if (err) {
 			res.json({error: "User not found", code: err});
-		} else {
-			var data = [];
-
-			var f = ff(this, function() {
-				for(var i = 0; i < resp.length; ++i) {
-					data[i] = {
-						stock: resp[i].stock,
-						user: resp[i].user,
-						quantity: resp[i].quantity,
-						paid: resp[i].paid,
-						date: resp[i].date
-					};
-
-					//closure this shit
-					(function(i) {
-						var wait = f.wait();
-						
-						Stock.findById(resp[i].stock, function (err, stockData) {
-							data[i].image = stockData.image;
-							data[i].currentPrice = stockData.price;
-						
-							wait();
-						});
-					})(i);
-				}
-			}, function () {
-				res.json(data);
-			});
+			return;
 		}
+
+		res.json(result);
 	});
 });
 
@@ -163,17 +147,17 @@ app.get("/api/stock/:id", function (req, res) {
 
 app.get("/api/stock/top/:limit", function (req, res) {
 	var limit = Math.min(MAX_RECORDS, req.params.limit || 10);
-	Stock.find().sort("-price").limit(limit).exec(function (err, data) {
-		console.log("SORTED", data);
-		res.json(data);
+	conn.query("SELECT * FROM stocks ORDER BY cost desc LIMIT ?", limit, function (err, result) {
+		console.log("SORTED", result);
+		res.json(result);
 	});
 });
 
 app.get("/api/stock/trending/:limit", function (req, res) {
 	var limit = Math.min(MAX_RECORDS, req.params.limit || 10);
-	Stock.find().sort("-priceDiff").limit(limit).exec(function (err, data) {
-		console.log("SORTED", data);
-		res.json(data);
+	conn.query("SELECT * FROM stocks ORDER BY (dayCost - cost) desc LIMIT ?", limit, function (err, result) {
+		console.log("SORTED", result);
+		res.json(result);
 	});
 });
 
