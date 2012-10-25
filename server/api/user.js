@@ -111,7 +111,7 @@ app.get("/api/user/logged/", function (req, res) {
 	if (req.session.user) {
 		console.log("IS LOGGED", req.session.user);
 
-		conn.query("SELECT * FROM users WHERE ? LIMIT 1", {
+		conn.query("SELECT money, email FROM users WHERE ? LIMIT 1", {
 			userName: req.session.user
 		}, function (err, result) {
 			console.log("GET LOGGED", err, result);

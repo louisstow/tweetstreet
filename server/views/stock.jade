@@ -1,0 +1,27 @@
+extends layout
+
+block content
+	#graph
+
+	img(src= image)
+
+	h2 #{stockID}
+		span #{cost}
+
+	#details: ul
+		li Tweets
+			span #{tweets}
+		li Following
+			span #{following}
+		li Followers
+			span #{followers}
+
+	#buy
+		h3 Buy Stock
+		label Quantity
+			input(type='number', min='1', value='1')
+		label Unit price
+			input(type='number', step='0.01', min='0.01', value=cost)
+		input(type='hidden', value=stockID)
+		span#cost
+		button bid

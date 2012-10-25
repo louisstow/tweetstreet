@@ -1,0 +1,17 @@
+body, html { padding: 0; margin: 0 }
+
+span.green { color: green; }
+span.red { color: red; }
+
+#marquee { border-bottom: 1px solid #ccc; height: 25px; position: relative }
+#marquee ul { list-style: none; padding: 0; margin: 0; position: absolute }
+#marquee li { 
+	float: left; 
+	margin-right: 10px; 
+	border-right: 3px double #ccc; 
+	padding-right: 10px;
+}
+
+#marquee li img { width: 16px; height: 16px; vertical-align: middle }
+
+#marquee li a { text-decoration: none; font-weight: bold }

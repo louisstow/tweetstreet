@@ -1,0 +1,28 @@
+extends layout
+
+block content
+	#portfolio: table
+		tr
+			th Date
+			th Stock
+			th Cost
+			th Quantity
+			th Total
+			th Current
+			th Sell
+		each item in portfolio
+			tr
+				td #{item.created}
+				td: a(href='/stock/'+item.stockID)
+					img(src=item.image)
+					span #{item.stockID}
+				td #{item.cost}
+				td #{item.quantity}
+
+				- var total = item.cost * item.quantity
+				td #{total}
+				td #{item.currentPrice}
+				td
+					input.quantity(type='number')
+					input.cost(type='number', value=item.currentPrice)
+					button ask

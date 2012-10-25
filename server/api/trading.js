@@ -36,7 +36,8 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 			stock,
 			user,
 			quantity,
-			cost.toFixed(5)
+			cost.toFixed(5),
+			new Date
 		]], this.slot());
 
 		//find any units selling for less than or equal to

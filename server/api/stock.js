@@ -70,7 +70,7 @@ exports.get = function(id, cb) {
 		}, this.slot());
 	}, function(account, result) {
 		if (!account || !result.length) {
-			console.log("NULL", account, result, arguments);
+			console.log("NULL", account, result, id);
 			cb && cb(null);
 			return;
 		}
@@ -85,7 +85,10 @@ exports.get = function(id, cb) {
 		};
 
 		//update the database with the new data
-		conn.query("UPDATE stocks SET ?", data);
+		conn.query("UPDATE stocks SET ? WHERE ?", [
+			data,
+			{stockID: id}
+		]);
 		
 		//copy data from various sources
 		data.cost = result.cost;
@@ -97,28 +100,30 @@ exports.get = function(id, cb) {
 		console.log(data);
 
 		cb && cb(data);
+	}).error(function(e) {
+		console.log("\n\n\nERROR IN GET", arguments);
 	});
+}
+
+exports.portfolio = function (id, cb) {
+	var q = conn.query("SELECT p.*, s.image, s.cost as currentPrice \
+				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
+		userID: id
+	}, cb);
+	console.log("RUN", q.sql)
 }
 
 /**
 * Get my stock
 */
-app.get("/api/stock", function (req, res) {
+app.get("/api/stock/", function (req, res) {
 	if (!req.session.userID) {
 		res.json({error: "User not found"});
 		return;
 	}
 
-	conn.query("SELECT p.*, s.image, s.cost as currentPrice \
-				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
-		userID: req.session.userID
-	}, function (err, result) {
-		if (err) {
-			res.json({error: "User not found", code: err});
-			return;
-		}
-
-		res.json(result);
+	exports.portfolio(req.session.userID, function (err, data) {
+		res.json(data)
 	});
 });
 
