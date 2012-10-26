@@ -61,13 +61,23 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 
 			//if enough quantity
 			if (unit.quantity >= currentQuantity) {
-				//remove bids from market
-				console.log("ENOUGH quantity", unit.quantity - currentQuantity, unit.id, unit._id);
+				
+				console.log("ENOUGH quantity", unit.quantity - currentQuantity);
 
+				//remove bids from market
 				conn.query("DELETE FROM buying WHERE ? LIMIT 1", {tradeID: buy.insertId});
+
+				//remove the quantity
 				conn.query("UPDATE selling SET quantity = quantity - ? WHERE ?", [
 					currentQuantity,
 					{tradeID: unit.tradeID}
+				]);
+
+				//give the user their hard earned money
+				//give the user their hard earned money
+				conn.query("UPDATE users SET money = money + ? WHERE ?", [
+					quantity * unit.cost,
+					{userID: unit.sellerID}
 				]);
 				
 				//update sale price
@@ -115,6 +125,12 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 					{stockID: stock}
 				]);
 
+				//give the user their hard earned money
+				conn.query("UPDATE users SET money = money + ? WHERE ?", [
+					unit.quantity * unit.cost,
+					{userID: unit.sellerID}
+				]);
+
 				conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
 					stock,
 					user,
@@ -145,8 +161,36 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 	}).cb(cb);
 };
 
-exports.sell = function(stock, user, quantity, cost) {
+exports.sell = function(portfolioID, user, quantity, cost, cb) {
+	ff(function () {
+		//grab the info about their portfolio
+		conn.query("SELECT * FROM portfolio WHERE ? AND ?", [
+			{portfolioID: portfolioID},
+			{userID: user}
+		], this.slot());
+	}, function (portfolio) {
+		portfolio = portfolio[0];
+		if (portfolio.quantity < quantity) {
+			this.fail({error: "Not enough stock"});
+		}
 
+		//add to the market
+		conn.query("INSERT INTO selling VALUES (DEFAULT, ?)", [[
+			portfolio.stockID,
+			user,
+			quantity,
+			cost,
+			new Date
+		]]);
+
+
+	}, function (account) {
+
+
+	}).error(function (e) {
+		console.log("ERROR INSELL", e);
+		cb && cb(1, e);
+	});
 };
 
 /**

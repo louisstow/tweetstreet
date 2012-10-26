@@ -8,6 +8,28 @@ var FORM = {
 
 			window.location = "/";
 		}
+	},
+
+	"register": {
+		url: "user/",
+		success: function (resp) {
+			if (resp.error) {
+				return $("#message").html(resp.error)
+			}
+
+			window.location = "/";
+		}
+	},
+
+	"buy": {
+		url: "trading/buy/",
+		success: function (resp) {
+			if (resp.error) {
+				return $("#message").html(resp.error);
+			}
+
+			$("#message").html("Shared bought. View them in My Portfolio");
+		}
 	}
 };
 

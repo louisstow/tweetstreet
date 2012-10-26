@@ -20,6 +20,8 @@ app.set('view options', {layout: false});
 
 app.listen(5657);
 
+var title = "Tweet Street - Stock Exchange for Twitter";
+
 /**
 * Initialise MySQL
 */
@@ -61,7 +63,7 @@ app.get("/", function (req, res) {
 	showPage('home', {
 		req: req, 
 		res: res, 
-		title: 'TweetStreet - Stock Exchange for Twitter'
+		title: title
 	});
 });
 
@@ -69,7 +71,7 @@ app.get("/login", function (req, res) {
 	showPage('login', {
 		req: req, 
 		res: res, 
-		title: 'Login to TweetStreet - Stock Exchange for Twitter'
+		title: 'Login to ' + title
 	});
 });
 
@@ -77,7 +79,7 @@ app.get("/register", function (req, res) {
 	showPage('register', {
 		req: req, 
 		res: res, 
-		title: 'Register to TweetStreet - Stock Exchange for Twitter'
+		title: 'Register to ' + title
 	});
 });
 
@@ -88,13 +90,13 @@ app.get("/stock/:id", function (req, res) {
 			q.stock.create({twitter: req.params.id}, function(data) {
 				data.req = req;
 				data.res = res;
-				data.title = data.stockID + ' @ TweetStreet - Stock Exchange for Twitter';
+				data.title = data.stockID + ' @ ' + title;
 				showPage('stock', data);
 			});
 		} else {
 			data.req = req;
 			data.res = res;
-			data.title = data.stockID + ' @ TweetStreet - Stock Exchange for Twitter';
+			data.title = data.stockID + ' @ ' + title;
 
 			showPage('stock', data);
 		}

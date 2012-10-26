@@ -11,9 +11,12 @@ html
 	body
 		marquee#marquee: ul
 		header
-			h1: a(href='/') TweetStreet
+			h1: a(href='/') Tweet Street
 			nav: ul
 				li: a(href='/instructions') Instructions
+
+				if logged
+					li: a(href='/my-portfolio') My Portfolio
 
 				li: a(href='/top-traders') Top Traders
 

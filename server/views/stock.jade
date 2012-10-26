@@ -16,12 +16,12 @@ block content
 		li Followers
 			span #{followers}
 
-	#buy
+	#buy.form
 		h3 Buy Stock
 		label Quantity
-			input(type='number', min='1', value='1')
+			input.quantity(type='number', min='1', value='1')
 		label Unit price
-			input(type='number', step='0.01', min='0.01', value=cost)
-		input(type='hidden', value=stockID)
+			input.cost(type='number', step='0.01', min='0.01', value=cost)
+		input.stock(type='hidden', value=stockID)
 		span#cost
 		button bid

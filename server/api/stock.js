@@ -92,9 +92,9 @@ exports.get = function(id, cb) {
 		
 		//copy data from various sources
 		data.cost = result.cost;
-  		data.dayCost = result.dayCost;
-  		data.stockID = result.stockID;
-		data.status = account.status.text;
+  	data.dayCost = result.dayCost;
+  	data.stockID = result.stockID;
+		data.status = (account.status && account.status.text) || "I don't talk much";
 		data.description = account.description;
 
 		console.log(data);
@@ -102,11 +102,12 @@ exports.get = function(id, cb) {
 		cb && cb(data);
 	}).error(function(e) {
 		console.log("\n\n\nERROR IN GET", arguments);
+		cb && cb(null);
 	});
 }
 
 exports.portfolio = function (id, cb) {
-	var q = conn.query("SELECT p.*, s.image, s.cost as currentPrice \
+	var q = conn.query("SELECT p.*, s.image, FORMAT(p.cost * p.quantity, 2) as total, FORMAT(p.cost, 2) as cost, FORMAT(s.cost, 2) as currentPrice \
 				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
 		userID: id
 	}, cb);
