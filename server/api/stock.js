@@ -92,8 +92,8 @@ exports.get = function(id, cb) {
 		
 		//copy data from various sources
 		data.cost = result.cost;
-  	data.dayCost = result.dayCost;
-  	data.stockID = result.stockID;
+  		data.dayCost = result.dayCost;
+  		data.stockID = result.stockID;
 		data.status = (account.status && account.status.text) || "I don't talk much";
 		data.description = account.description;
 

@@ -26,6 +26,7 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 		}, this.slot());
 	}, function (userData) {
 		userData = userData[0];
+		//make sure we have enough money
 		if (userData.money < cost * quantity) {
 			this.fail({error: "Not enough money"});
 			return;
@@ -47,121 +48,98 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 				cost
 		], this.slot());
 		
-	}, function (buy, data) {
+	}, function (buy, asks) {
 		//if no stocks found in our price range
 		if (!data.length) {
 			this.fail({error: "No stocks found"});
 			return;
 		}
 
-		var unit;
-		//loop over all available stocks
-		for (var i = 0; i < data.length; ++i) {
-			unit = data[i];
+		var ask;
+		var currentQuantity = quantity; //the quantity we still need
+		var i = 0;
+		var total = 0;
+		var lastPrice = 0;
 
-			//if enough quantity
-			if (unit.quantity >= currentQuantity) {
-				
-				console.log("ENOUGH quantity", unit.quantity - currentQuantity);
+		while (currentQuantity > 0) {
+			ask = asks[i++];
 
-				//remove bids from market
-				conn.query("DELETE FROM buying WHERE ? LIMIT 1", {tradeID: buy.insertId});
+			//value to decrement from
+			var takeAway = Math.min(currentQuantity, ask.quantity);
 
-				//remove the quantity
-				conn.query("UPDATE selling SET quantity = quantity - ? WHERE ?", [
-					currentQuantity,
-					{tradeID: unit.tradeID}
-				]);
+			//decrement the quantity from bid
+			conn.query("UPDATE selling SET quantity = quantity - ? WHERE ?", [
+				takeAway,
+				{tradeID: ask.tradeID}
+			]);
 
-				//give the user their hard earned money
-				//give the user their hard earned money
-				conn.query("UPDATE users SET money = money + ? WHERE ?", [
-					quantity * unit.cost,
-					{userID: unit.sellerID}
-				]);
-				
-				//update sale price
-				conn.query("UPDATE stocks SET ? WHERE ?", [
-					{cost: unit.cost},
-					{stockID: stock}
-				]);
+			total += ask.cost * takeAway;
+			
+			//update sale price
+			lastPrice = ask.cost;
 
-				conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
-					stock,
-					user,
-					quantity,
-					unit.cost,
-					new Date
-				]]);
+			//add it to their portfolio
+			conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
+				stockID,
+				user,
+				takeAway,
+				ask.cost,
+				new Date
+			]]);
 
-				conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
-					stock,
-					user,
-					unit.sellerID,
-					quantity,
-					unit.cost,
-					new Date
-				]]);
+			//save the trade history
+			conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
+				stockID,
+				user,
+				ask.sellerID,
+				quantity,
+				ask.cost,
+				new Date
+			]]);
 
-				total += unit.cost * quantity;
-				
-				break;
-			//if more than 0, take all of it
-			} else if(unit.quantity > 0) {
-				//amount left to buy
-				currentQuantity -= unit.quantity;
+			//give them their hard earned money
+			conn.query("UPDATE users SET money = money + ? WHERE ?", [
+				takeAway * ask.cost,
+				{userID: ask.userID}
+			]);
 
-				conn.query("UPDATE buying SET ? WHERE ?", [
-					{quantity: currentQuantity},
-					{tradeID: buy.insertId}
-				]);
-
-				conn.query("DELETE FROM selling WHERE ? LIMIT 1", {
-					tradeID: unit.tradeID
-				});
-
-				conn.query("UPDATE stocks SET ? WHERE ?", [
-					{cost: unit.cost},
-					{stockID: stock}
-				]);
-
-				//give the user their hard earned money
-				conn.query("UPDATE users SET money = money + ? WHERE ?", [
-					unit.quantity * unit.cost,
-					{userID: unit.sellerID}
-				]);
-
-				conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
-					stock,
-					user,
-					quantity,
-					unit.cost,
-					new Date
-				]]);
-
-				conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
-					stock,
-					user,
-					unit.sellerID,
-					quantity,
-					unit.cost,
-					new Date
-				]]);
-
-				total += unit.cost * unit.quantity;
-			}
+			currentQuantity -= takeAway;
 		}
 
-		conn.query("UPDATE users SET money = money - ? WHERE ?", [
-			total,
-			{userID: user}
+		//save the last price
+		conn.query("UPDATE stocks SET ? WHERE ?", [
+			{cost: lastPrice},
+			{stockID: stockID}
+		]);
+
+		//update selling
+		conn.query("UPDATE buying SET quantity = ? WHERE ?", [
+			Math.max(currentQuantity, 0),
+			{tradeID: buy.insertId}
 		]);
 
 		cleanup();
-	}).cb(cb);
+	}).cb(cb || function() {});
 };
 
-exports.sell = function(portfolioID, user, quantity, cost, cb) {
+/**
+* Selling stock
+* 1. Check the user has the amount of stock in portfolio
+* 2. Insert the stockID, quantity, cost into [selling]. Take out from portfolio
+* 3. Check if any bids [buying] with quantity > 0 and cost <= sellingCost
+* 4. If bid.quantity >= my.quantity
+	a. Take our quantity delete the ask
+	b. Take money from buyer
+	c. Credit us
+	d. Update the bid
+* 5. otherwise
+	a. Take the whole pie and delete the ask
+	b. update our selling quantity
+	c. Take money from buyer
+	d. Credit us
+* 6.
+*/
+exports.sell = function (portfolioID, user, quantity, cost, cb) {
 	ff(function () {
 		//grab the info about their portfolio
 		conn.query("SELECT * FROM portfolio WHERE ? AND ?", [
@@ -174,6 +152,8 @@ exports.sell = function(portfolioID, user, quantity, cost, cb) {
 			this.fail({error: "Not enough stock"});
 		}
 
+		this.pass(portfolio);
+
 		//add to the market
 		conn.query("INSERT INTO selling VALUES (DEFAULT, ?)", [[
 			portfolio.stockID,
@@ -181,16 +161,90 @@ exports.sell = function(portfolioID, user, quantity, cost, cb) {
 			quantity,
 			cost,
 			new Date
-		]]);
+		]], this.slot());
 
+		//select all bids within range
+		conn.query("SELECT * FROM buying WHERE quantity > 0 AND cost >= ?", 
+			cost,
+			this.slot();
+		);
 
-	}, function (account) {
+		//update our portfolio quantity
+		conn.query("UPDATE portfolio SET quantity = quantity - ? WHERE ?", [
+			quantity,
+			{portfolioID: portfolioID}
+		]);
+	}, function (portfolio, selling, bids) {
 
+		var bid;
+		var currentQuantity = quantity; //the quantity we still need
+		var stockID = portfolio.stockID;
+		var i = 0;
+		var total = 0;
+		var lastPrice = 0;
 
+		while (currentQuantity > 0) {
+			bid = bids[i++];
+
+			//value to decrement from
+			var takeAway = Math.min(currentQuantity, bid.quantity);
+
+			//decrement the quantity from bid
+			conn.query("UPDATE buying SET quantity = quantity - ? WHERE ?", [
+				takeAway,
+				{tradeID: bid.tradeID}
+			]);
+
+			total += bid.cost * takeAway;
+			
+			//update sale price
+			lastPrice = bid.cost;
+
+			//add it to their portfolio
+			conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
+				stockID,
+				bid.userID,
+				takeAway,
+				bid.cost,
+				new Date
+			]]);
+
+			//save the trade history
+			conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
+				stockID,
+				bid.buyerID,
+				user,
+				quantity,
+				bid.cost,
+				new Date
+			]]);
+
+			currentQuantity -= takeAway;
+		}
+
+		//give us our hard earned money
+		conn.query("UPDATE users SET money = money + ? WHERE ?", [
+			takeAway * unit.cost,
+			{userID: user}
+		]);
+
+		//save the last price
+		conn.query("UPDATE stocks SET ? WHERE ?", [
+			{cost: lastPrice},
+			{stockID: stockID}
+		]);
+
+		//update selling
+		conn.query("UPDATE selling SET quantity = ? WHERE ?", [
+			Math.max(currentQuantity, 0),
+			{tradeID: selling.insertId}
+		]);
+
+		cleanup();
 	}).error(function (e) {
 		console.log("ERROR INSELL", e);
 		cb && cb(1, e);
-	});
+	}).cb(cb || function() {});
 };
 
 /**

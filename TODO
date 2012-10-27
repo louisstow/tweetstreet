@@ -2,25 +2,7 @@
 
 ## APIs
 
-### stock/
-* getTopStock
-	- limit : Number = 10
-
-* getTrending
-	- limit : Number = 10
-
-* get
-	- id : String
-
-* add
-	- id : String
-
 ### users/
-* register
-	- user : String
-	- pass : String
-	- email : String
-	- twitter : String
 
 * getTopTraders
 	- limit : Number = 10
@@ -28,25 +10,23 @@
 * getWorstTraders
 	- limit : Number = 10
 
-* login
-	- user : String
-	- pass : String
-
 ### trading/
 * sell
 	- stock : String
 	- quantity : Number
 	- cost : Number
 
-* buy
-	- stock : String
-	- quantity : Number
-	- cost : Number
-
 ### history/
-* getCurrentPrice
-	- stock : String
-
 * latestTrades
 	- limit : Number
 
+### misc
+
+* cron job to take last sale cost and save as dayCost
+* optimize IO to scale
+* add share on twitter links
+* allow people to buy credit
+* fix the IPO algorithm
+* fix marquee
+	- duplicate the ul so it continues. Make smoother with rAF
+	
