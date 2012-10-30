@@ -1,28 +1,79 @@
 extends layout
 
-block content
-	#portfolio: table
-		tr
-			th Date
-			th Stock
-			th Cost
-			th Quantity
-			th Total
-			th Current
-			th Sell
-		each item in portfolio
-			tr
-				td #{item.created}
-				td: a(href='/stock/'+item.stockID)
-					img(src=item.image)
-					span #{item.stockID}
-				td $#{item.cost}
-				td #{item.quantity}
+append scripts
+	script(src='portfolio.js')
 
-				td $#{item.total}
-				td $#{item.currentPrice}
-				td
-					input.quantity(type='number', value='1')
-					input.cost(type='number', value=item.currentPrice)
-					input.portfolioID(type='hidden', value=item.portfolioID)
-					button ask
+block content
+	h2 Portfolio 
+	#portfolio
+		if portfolio.length
+			table
+				tr
+					th Date
+					th Stock
+					th Cost
+					th Quantity
+					th Total
+					th Current
+					th Sell
+				each item in portfolio
+					tr
+						td #{item.created}
+						td: a(href='/stock/'+item.stockID)
+							img(src=item.image)
+							span #{item.stockID}
+						td $#{item.cost}
+						td #{item.quantity}
+
+						td $#{item.total}
+						td $#{item.currentPrice}
+						td.form(data-id='sell')
+							input.quantity(type='number', value='1')
+							input.cost(type='number', value=item.currentPrice)
+							input.portfolioID(type='hidden', value=item.portfolioID)
+							button ask
+		else
+			strong You do not have any Shares 
+
+
+	h2 Buying
+	#buying
+		if buying.length
+			table
+				tr
+					th Created
+					th Stock
+					th Quantity
+					th Cost
+					th Cancel
+				each item in buying
+					tr
+						td #{item.created}
+						td #{item.stockID}
+						td #{item.quantity}
+						td $#{item.cost}
+						td
+							button.cancel(data-id=item.tradeID) cancel
+		else
+			strong You do not have any bids
+
+	h2 Selling
+	#selling
+		if selling.length
+			table
+				tr
+					th Created
+					th Stock
+					th Quantity
+					th Cost
+					th Cancel
+				each item in selling
+					tr
+						td #{item.created}
+						td #{item.stockID}
+						td #{item.quantity}
+						td $#{item.cost}
+						td
+							button.cancel(data-id=item.tradeID) cancel
+		else
+			strong You do not have any asks

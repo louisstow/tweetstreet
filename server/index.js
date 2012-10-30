@@ -1,5 +1,6 @@
 var express = require("express");
 var fs = require("fs");
+var ff = require("ff");
 var path = require("path");
 var mysql = require("mysql");
 var app = express();
@@ -106,18 +107,26 @@ app.get("/stock/:id", function (req, res) {
 app.get("/my-portfolio", function (req, res) {
 	if (!req.session.user) return res.redirect("/login");
 
-	q.stock.portfolio(req.session.userID, function (err, result) {
-		if (err) return res.redirect("/login");
+	var data = {
+		req: req,
+		res: res,
+		title: 'My Portfolio'
+	};
 
-		var data = {
-			req: req,
-			res: res,
-			title: 'My Portfolio'
-		};
+	ff(function () {
+		q.stock.portfolio(req.session.userID, this.slot());
+	}, function (portfolio) {
+		data.portfolio = portfolio;
+		q.stock.getBuying(req.session.userID, this.slot());	
+	}, function (buying) {
+		data.buying = buying;
+		q.stock.getSelling(req.session.userID, this.slot());	
+	}, function (selling) {
+		data.selling = selling;
 
-		console.log("\n\nWATA", result, err)
-
-		data.portfolio = result;
 		showPage('portfolio', data);
+	}).error(function (e) {
+		console.log("GET PORTFOLIO", e);
+		res.send(500);
 	});
 });

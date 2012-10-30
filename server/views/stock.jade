@@ -1,27 +1,30 @@
 extends layout
 
 block content
-	#graph
+	#stock
+		#graph
 
-	img(src= image)
+		
 
-	h2 #{stockID}
-		span #{cost}
+		h2 
+			img(src= image)
+			span #{stockID}
+			span.money #{cost}
 
-	#details: ul
-		li Tweets
-			span #{tweets}
-		li Following
-			span #{following}
-		li Followers
-			span #{followers}
+		#details: dl
+			dt Tweets
+			dd #{tweets}
+			dt Following
+			dd #{following}
+			dt Followers
+			dd #{followers}
 
-	#buy.form
-		h3 Buy Stock
-		label Quantity
-			input.quantity(type='number', min='1', value='1')
-		label Unit price
-			input.cost(type='number', step='0.01', min='0.01', value=cost)
-		input.stock(type='hidden', value=stockID)
-		span#cost
-		button bid
+		#buy.form
+			h3 Buy Stock
+			label Quantity
+				input.quantity(type='number', min='1', value='1')
+			label Unit price
+				input.cost(type='number', step='0.01', min='0.01', value=cost)
+			input.stock(type='hidden', value=stockID)
+			span#cost
+			button bid

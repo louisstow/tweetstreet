@@ -28,7 +28,18 @@ var FORM = {
 				return $("#message").html(resp.error);
 			}
 
-			$("#message").html("Shared bought. View them in My Portfolio");
+			window.location = "/my-portfolio";
+		}
+	},
+
+	"sell": {
+		url: "trading/sell/",
+		success: function (resp) {
+			if (resp.error) {
+				return $("#message").html(resp.error);
+			}
+
+			//window.location.reload();
 		}
 	}
 };
@@ -46,7 +57,10 @@ $(function () {
 	//for each form
 	$(".form").each(function () {
 		var $form = $(this);
-		var type = $form.attr("id");
+		var type = $form.attr("id") || $form.attr("data-id");
+
+		//no information about form
+		if (!FORM[type]) return;
 
 		//on the button click grab the form data
 		$("button", $form).click(function () {
@@ -101,8 +115,15 @@ function api (opts) {
 		url: "/api/" + opts.url,
 		data: JSON.stringify(opts.data),
 		contentType: "application/json",
-		dataType: "json",
-		success: opts.success,
+		dataType: "text",
+		success: function (resp) {
+			//transform OK into json
+			if (resp === "OK")
+				resp = "{\"status\": \"OK\"}";
+
+			resp = JSON.parse(resp);
+			opts.success && opts.success.apply(this, [resp]);
+		},
 		error: opts.error
 	};
 

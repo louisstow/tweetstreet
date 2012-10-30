@@ -12,9 +12,10 @@ var SELLING = 0;
 function cleanup () {
 	conn.query("DELETE FROM selling WHERE quantity = 0");
 	conn.query("DELETE FROM buying WHERE quantity = 0");
+	conn.query("DELETE FROM portfolio WHERE quantity = 0");
 }
 
-exports.buy = function(stock, user, quantity, cost, cb) {
+exports.buy = function(stockID, user, quantity, cost, cb) {
 	
 	var currentQuantity = quantity;
 	var total = 0;
@@ -34,7 +35,7 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 
 		//insert into buying
 		conn.query("INSERT INTO buying VALUES (DEFAULT, ?)", [[
-			stock,
+			stockID,
 			user,
 			quantity,
 			cost.toFixed(5),
@@ -43,14 +44,15 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 
 		//find any units selling for less than or equal to
 		//our price
-		conn.query("SELECT * FROM selling WHERE stockID=? AND cost <= ? AND quantity > 0", [
-				stock,
-				cost
+		conn.query("SELECT * FROM selling WHERE stockID=? AND cost <= ? AND quantity > 0 AND sellerID <> ?", [
+				stockID,
+				cost,
+				user
 		], this.slot());
 		
 	}, function (buy, asks) {
 		//if no stocks found in our price range
-		if (!data.length) {
+		if (!asks.length) {
 			this.fail({error: "No stocks found"});
 			return;
 		}
@@ -63,6 +65,7 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 
 		while (currentQuantity > 0) {
 			ask = asks[i++];
+			if (!ask) break;
 
 			//value to decrement from
 			var takeAway = Math.min(currentQuantity, ask.quantity);
@@ -118,8 +121,11 @@ exports.buy = function(stock, user, quantity, cost, cb) {
 			{tradeID: buy.insertId}
 		]);
 
+	}).cb(function (err) {
 		cleanup();
-	}).cb(cb || function() {});
+		console.log("\n\nBUY", arguments);
+		cb && cb.apply(arguments);
+	});
 };
 
 /**
@@ -147,9 +153,13 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 			{userID: user}
 		], this.slot());
 	}, function (portfolio) {
+		if (portfolio.length === 0) {
+			return this.fail({error: "No portfolio with ID "+portfolioID})
+		}
+
 		portfolio = portfolio[0];
 		if (portfolio.quantity < quantity) {
-			this.fail({error: "Not enough stock"});
+			return this.fail({error: "Not enough stock", p: portfolio.quantity, q: quantity});
 		}
 
 		this.pass(portfolio);
@@ -164,10 +174,11 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 		]], this.slot());
 
 		//select all bids within range
-		conn.query("SELECT * FROM buying WHERE quantity > 0 AND cost >= ?", 
+		conn.query("SELECT * FROM buying WHERE stockID = ? AND quantity > 0 AND cost >= ? AND buyerID <> ?", [
+			portfolio.stockID,
 			cost,
-			this.slot();
-		);
+			user
+		], this.slot());
 
 		//update our portfolio quantity
 		conn.query("UPDATE portfolio SET quantity = quantity - ? WHERE ?", [
@@ -175,6 +186,10 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 			{portfolioID: portfolioID}
 		]);
 	}, function (portfolio, selling, bids) {
+		//handle no matches
+		if (!bids.length) {
+			return this.fail({error: "No bids found"});
+		}
 
 		var bid;
 		var currentQuantity = quantity; //the quantity we still need
@@ -185,6 +200,7 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 
 		while (currentQuantity > 0) {
 			bid = bids[i++];
+			if (!bid) break;
 
 			//value to decrement from
 			var takeAway = Math.min(currentQuantity, bid.quantity);
@@ -202,8 +218,8 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 
 			//add it to their portfolio
 			conn.query("INSERT INTO portfolio VALUES (DEFAULT, ?)", [[
-				stockID,
-				bid.userID,
+				portfolio.stockID,
+				bid.buyerID,
 				takeAway,
 				bid.cost,
 				new Date
@@ -211,7 +227,7 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 
 			//save the trade history
 			conn.query("INSERT INTO history VALUES (DEFAULT, ?)", [[
-				stockID,
+				portfolio.stockID,
 				bid.buyerID,
 				user,
 				quantity,
@@ -224,14 +240,14 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 
 		//give us our hard earned money
 		conn.query("UPDATE users SET money = money + ? WHERE ?", [
-			takeAway * unit.cost,
+			takeAway * bid.cost,
 			{userID: user}
 		]);
 
 		//save the last price
 		conn.query("UPDATE stocks SET ? WHERE ?", [
 			{cost: lastPrice},
-			{stockID: stockID}
+			{stockID: portfolio.stockID}
 		]);
 
 		//update selling
@@ -240,11 +256,12 @@ exports.sell = function (portfolioID, user, quantity, cost, cb) {
 			{tradeID: selling.insertId}
 		]);
 
+		
+	}).cb(function () {
 		cleanup();
-	}).error(function (e) {
-		console.log("ERROR INSELL", e);
-		cb && cb(1, e);
-	}).cb(cb || function() {});
+		console.log("EXPORTSSELL", arguments);
+		cb && cb.apply(arguments);
+	});
 };
 
 /**
@@ -272,6 +289,51 @@ app.post("/api/trading/buy/", function (req, res) {
 	);
 
 
+});
+
+/**
+* End point for selling
+*/
+app.post("/api/trading/sell/", function (req, res) {
+	if (!req.session.user) {
+		return res.json({error: "Please login"});
+	}
+
+	if (!req.body.portfolioID || !req.body.quantity || !req.body.cost) {
+		return res.json({error: "Incorrect arguments"});
+	}
+
+	exports.sell(
+		req.body.portfolioID,
+		req.session.userID,
+		+req.body.quantity || 0,
+		+req.body.cost || 0,
+		function (err) {
+			console.log("\n\n\n\nSELL", arguments);
+			if (err) res.json({error: err})
+			else res.send(200);
+		}
+	);
+
+
+});
+
+//end point to cancel trades
+app.post("/api/:type/delete/", function (req, res) {
+	var type = req.params.type;
+	var id = req.body.id;
+
+	//make sure no one can inject sql
+	if (type !== "buying" && type !== "selling")
+		return res.json({error: "Invalid type"});
+
+	conn.query("DELETE FROM " + type + " WHERE ?", [
+		{tradeID: id}
+	], function (err) {
+		console.log("\n\nDELETE", arguments)
+		if (err) res.json(err);
+		else res.send(200);
+	})
 });
 
 return exports;

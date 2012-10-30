@@ -9,32 +9,37 @@ html
 			script(src='/main.js')
 
 	body
-		marquee#marquee: ul
+		#marquee: ul
 		header
-			h1: a(href='/') Tweet Street
+			#user
+				if logged
+					span On the floor, 
+						a(href='/my-portfolio') #{user.user}
+					div Available Cash 
+						span.money $#{user.money}
+					a(href='/logout') Logout
+
+				else
+					a(href='/login') Login
+					a(href='/register') Register
+
+			h1
+				a(href='/')
+					span Tweet Street
 			nav: ul
 				li: a(href='/instructions') Instructions
 
 				if logged
-					li: a(href='/my-portfolio') My Portfolio
+					li: a(href='/my-portfolio') Portfolio
 
 				li: a(href='/top-traders') Top Traders
 
 				li: a(href='/earn-money') Earn Money!
 
-				li: a(href='/contact') Contact
-
-			#user
-				if logged
-					span On the floor, 
-						a(href='/my-portfolio') #{user.user}
-
-				else
-					a(href='/login') Login
-					a(href='/register') Register
+				li: a(href='http://twitter.com/louisstow') Follow Me
 				
 			#search
-				input(type='text')
+				input(type='text',placeholder='@')
 				button search
 
 		#message

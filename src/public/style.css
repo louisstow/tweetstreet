@@ -1,17 +1,191 @@
-body, html { padding: 0; margin: 0 }
+@import url(http://fonts.googleapis.com/css?family=Archivo+Narrow:400,700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700);
+
+body, html { 
+	padding: 0; 
+	margin: 0; 
+	font-family: 'Open Sans', sans-serif;
+}
+
+a {
+	text-decoration: none;
+	color: #3E75F7;
+}
+
+h1, h2, h3, h4 {
+	font-family: 'Archivo Narrow', sans-serif;
+}
 
 span.green { color: green; }
 span.red { color: red; }
 
-#marquee { border-bottom: 1px solid #ccc; height: 25px; position: relative }
-#marquee ul { list-style: none; padding: 0; margin: 0; position: absolute }
+#marquee { 
+	border-bottom: 1px solid #999; 
+	height: 25px; 
+	font-size: 14px;
+	overflow: hidden;
+
+	position: relative;
+	z-index: 1000;
+}
+
+#marquee ul { 
+	list-style: none; 
+	padding: 2px 0 0 0; 
+	margin: 0; 
+	display: inline-block;
+	white-space: nowrap;
+}
+
 #marquee li { 
-	float: left; 
 	margin-right: 10px; 
 	border-right: 3px double #ccc; 
 	padding-right: 10px;
+	display: inline;
 }
 
-#marquee li img { width: 16px; height: 16px; vertical-align: middle }
+#marquee li img { width: 16px; height: 16px; vertical-align: sub }
 
 #marquee li a { text-decoration: none; font-weight: bold }
+
+#user {
+	float: right;
+}
+
+#user a {
+	margin-left: 10px;
+}
+
+button {
+	clear: both;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	color: #444;
+	font-size: 14px;
+	padding: 5px 10px;
+	text-shadow: 0px 1px white;
+	background: #F7F7F7;
+	background: -moz-linear-gradient(top, #F7F7F7 0%, #DBDBDB 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#F7F7F7), color-stop(100%,#DBDBDB));
+	background: -webkit-linear-gradient(top, #F7F7F7 0%,#DBDBDB 100%);
+	background: -o-linear-gradient(top, #F7F7F7 0%,#DBDBDB 100%);
+	background: -ms-linear-gradient(top, #F7F7F7 0%,#DBDBDB 100%);
+	background: linear-gradient(to bottom, #F7F7F7 0%,#DBDBDB 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7f7f7', endColorstr='#dbdbdb',GradientType=0 );
+}
+
+input {
+	padding: 5px;
+	font-size: 14px;
+	border: 1px solid #ccc;
+	box-shadow: inset 1px 1px 3px 1px #eee;
+}
+
+.form {
+	width: 300px;
+}
+
+header { 
+	padding: 10px 50px;
+	box-shadow: 1px 0 5px 1px #EEE;
+	border-bottom: 1px solid #EEE;
+}
+
+header h1 {
+	font-family: 'Archivo Narrow', sans-serif;
+	font-weight: 700;
+	padding: 0;
+	margin: 0 0 5px 0;
+}
+
+header h1 a { color: #3E75F7; }
+
+nav {
+	margin-bottom: 5px;
+}
+
+nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;	
+}
+
+nav li {
+	display: inline;
+}
+
+nav li a {
+	margin-right: 15px;
+}
+
+label {
+	display: block;
+	clear: both;
+	line-height: 30px;
+}
+
+label input {
+	margin-left: 10px;
+	float: right;
+}
+
+.form button {
+	float: right;
+}
+
+.column {
+	width: 400px;
+	float: left;
+}
+
+.column ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.column li {
+	margin: 5px 0;
+}
+
+.column li img {
+	vertical-align: middle;
+	width: 32px;
+	height: 32px;
+}
+
+.column li span {
+	margin: 0 5px;
+	font-size: 14px;
+}
+
+#main {
+	padding: 10px 50px;
+}
+
+#user {
+	text-align: right
+}
+
+#user .money {
+	font-weight: 600;
+}
+
+#stock .money {
+	margin-left: 15px;
+}
+
+#stock h2 {
+	font-size: 28px;
+}
+
+#stock h2 img { 
+	position: relative;
+	top: 12px;
+	margin-right: 10px
+}
+
+#instructions {
+	text-align: center;
+	font-size: 20px;
+}

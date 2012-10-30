@@ -97,8 +97,6 @@ exports.get = function(id, cb) {
 		data.status = (account.status && account.status.text) || "I don't talk much";
 		data.description = account.description;
 
-		console.log(data);
-
 		cb && cb(data);
 	}).error(function(e) {
 		console.log("\n\n\nERROR IN GET", arguments);
@@ -111,7 +109,22 @@ exports.portfolio = function (id, cb) {
 				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
 		userID: id
 	}, cb);
-	console.log("RUN", q.sql)
+}
+
+exports.getBuying = function (id, cb) {
+	conn.query("SELECT *, FORMAT(cost, 2) as cost\
+		FROM buying WHERE ?", 
+		{buyerID: id}, 
+		cb
+	);
+}
+
+exports.getSelling = function (id, cb) {
+	conn.query("SELECT *, FORMAT(cost, 2) as cost\
+		FROM selling WHERE ?", 
+		{sellerID: id}, 
+		cb
+	);
 }
 
 /**
@@ -156,7 +169,6 @@ app.get("/api/stock/:id", function (req, res) {
 app.get("/api/stock/top/:limit", function (req, res) {
 	var limit = Math.min(MAX_RECORDS, req.params.limit || 10);
 	conn.query("SELECT * FROM stocks ORDER BY cost desc LIMIT ?", limit, function (err, result) {
-		console.log("SORTED", result);
 		res.json(result);
 	});
 });
@@ -164,7 +176,6 @@ app.get("/api/stock/top/:limit", function (req, res) {
 app.get("/api/stock/trending/:limit", function (req, res) {
 	var limit = Math.min(MAX_RECORDS, req.params.limit || 10);
 	conn.query("SELECT * FROM stocks ORDER BY (cost - dayCost) desc LIMIT ?", limit, function (err, result) {
-		console.log("SORTED", result);
 		res.json(result);
 	});
 });
