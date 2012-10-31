@@ -31,10 +31,13 @@ span.red { color: red; }
 
 #marquee ul { 
 	list-style: none; 
-	padding: 2px 0 0 0; 
-	margin: 0; 
+	padding: 2px 15px 0 0; 
+	margin: 0 15px 0 0; 
 	display: inline-block;
 	white-space: nowrap;
+	position: absolute;
+	border-right: 3px double #ccc;
+	left: 0;
 }
 
 #marquee li { 
@@ -50,6 +53,7 @@ span.red { color: red; }
 
 #user {
 	float: right;
+	line-height: 35px;
 }
 
 #user a {
@@ -187,5 +191,5 @@ label input {
 
 #instructions {
 	text-align: center;
-	font-size: 20px;
+	font-size: 26px;
 }

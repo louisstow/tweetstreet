@@ -108,23 +108,5 @@ app.get("api/user/logout/", function (req, res) {
 	res.send(200);
 });
 
-/**
-* Make sure the user is logged in
-*/
-app.get("/api/user/logged/", function (req, res) {
-	console.log("GOT THE REQUEST", req.session, req.session.user)
-	if (req.session.user) {
-		console.log("IS LOGGED", req.session.user);
-
-		res.json({
-			user: req.session.user,
-			money: req.session.money
-		});
-	} else {
-		console.log("IS NOT LOGGED");
-		res.json({error: "Not logged in"});
-	}
-});
-
 //end load
 };

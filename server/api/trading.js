@@ -121,6 +121,12 @@ exports.buy = function(stockID, user, quantity, cost, cb) {
 			{tradeID: buy.insertId}
 		]);
 
+		//charge us
+		conn.query("UPDATE users SET money = money - ? WHERE ?", [
+			total,
+			{userID: user}
+		]);
+
 	}).cb(function (err) {
 		cleanup();
 		console.log("\n\nBUY", arguments);

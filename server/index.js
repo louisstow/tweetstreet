@@ -5,6 +5,7 @@ var path = require("path");
 var mysql = require("mysql");
 var app = express();
 
+global.cache = {};
 
 /**
 * Initialise Express
@@ -53,7 +54,25 @@ function showPage(page, opts) {
 	delete values.req;
 	delete values.res;
 
-	opts.res.render(page, values);
+	ff(function () {
+		var slut = this.slot();
+
+		//only check their money if logged in
+		if (values.logged) {
+			connection.query("SELECT money FROM users WHERE ?", {
+				userID: values.user.userID
+			}, slut);
+		} else {
+			slut();
+		} 
+	}, function (result) {
+		if (result && result.length) {
+			opts.req.session.money = result[0].money;
+		}
+
+		opts.res.render(page, values);
+	});
+	
 }
 
 

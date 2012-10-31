@@ -11,10 +11,6 @@
 	- limit : Number = 10
 
 ### trading/
-* sell
-	- stock : String
-	- quantity : Number
-	- cost : Number
 
 ### history/
 * latestTrades

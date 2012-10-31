@@ -51,6 +51,8 @@ $(function () {
 		success: function (resp) {
 			//update the top 10 page
 			$("#marquee ul").html(printStocks(resp));
+
+			startMarquee();
 		}
 	});
 
@@ -83,8 +85,40 @@ $(function () {
 
 	$("#search button").click(function () {
 		window.location = "/stock/" + $("#search input").val();
-	});
+	});	
 });
+
+function startMarquee() {
+	var contents = $("#marquee ul");
+	var contents2 = contents.clone().appendTo("#marquee");
+	var x = 0;
+	var xspeed = 2;
+	var width = contents.outerWidth();
+
+	setInterval(function () {
+		//tick should be outside of render
+		x -= xspeed;
+	}, 20);
+
+	//shim out rAF
+	var requestAnimFrame = (function() {
+		return  window.requestAnimationFrame       || 
+			window.webkitRequestAnimationFrame || 
+			window.mozRequestAnimationFrame    || 
+			window.oRequestAnimationFrame      || 
+			window.msRequestAnimationFrame     || 
+			function (callback){
+				window.setTimeout(callback, 1000 / 60);
+			};
+	})();
+
+	(function animloop(){
+		requestAnimFrame(animloop);
+		
+		contents.css("left", x % width | 0);
+		contents2.css("left", x % width + width | 0)
+	})();
+}
 
 function printStocks (data) {
 	var html = "";
