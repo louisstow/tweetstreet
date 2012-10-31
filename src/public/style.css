@@ -177,6 +177,7 @@ label input {
 
 #stock .money {
 	margin-left: 15px;
+	color: green;
 }
 
 #stock h2 {
@@ -193,3 +194,55 @@ label input {
 	text-align: center;
 	font-size: 26px;
 }
+
+#buy {
+	float: left;
+	margin-top: 20px;
+}
+
+#graph {
+	width: 500px;
+	height: 300px;
+	float: left;
+	margin-right: 20px;
+	border: 1px solid #eee;
+}
+
+#graph input {
+	padding: 2px;
+	font-size: 12px;
+	margin-top: -3px;
+}
+
+#graph strong {
+	text-align: center;
+	display: block;
+	color: #aaa;
+	margin-top: 120px;
+}
+
+#details dt {
+	float: left;
+	font-weight: 700;
+}
+
+#details dd {
+	width: 50px;
+	text-align: right; 
+	float: left;
+	margin: 0 15px 0 15px;
+	padding-right: 15px;
+	border-right: 1px solid #ccc;
+}
+
+footer {
+	clear: both;
+	padding: 20px;
+	text-align: center;
+	background: #eee;
+	border-top: 1px solid #CCC;
+	color: #444;
+	margin-top: 20px;
+}
+
+.clearer { clear: both; }

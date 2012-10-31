@@ -1,10 +1,13 @@
 extends layout
 
+append scripts
+	script(src='http://code.highcharts.com/stock/highstock.src.js')
+	script(src='http://code.highcharts.com/stock/modules/exporting.js')
+	script(src='/stock.js')
+
 block content
 	#stock
 		#graph
-
-		
 
 		h2 
 			img(src= image)
