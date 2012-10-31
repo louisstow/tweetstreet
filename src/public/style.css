@@ -53,11 +53,16 @@ span.red { color: red; }
 
 #user {
 	float: right;
-	line-height: 35px;
+	line-height: 25px;
+	text-align: right;
 }
 
 #user a {
 	margin-left: 10px;
+}
+
+#user .money {
+	font-weight: 700;
 }
 
 button {
@@ -165,14 +170,6 @@ label input {
 
 #main {
 	padding: 10px 50px;
-}
-
-#user {
-	text-align: right
-}
-
-#user .money {
-	font-weight: 600;
 }
 
 #stock .money {
