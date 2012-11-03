@@ -31,12 +31,11 @@ span.red { color: red; }
 
 #marquee ul { 
 	list-style: none; 
-	padding: 2px 15px 0 0; 
+	padding: 2px 0 0 0; 
 	margin: 0 15px 0 0; 
 	display: inline-block;
 	white-space: nowrap;
 	position: absolute;
-	border-right: 3px double #ccc;
 	left: 0;
 }
 
@@ -179,6 +178,7 @@ label input {
 
 #stock h2 {
 	font-size: 28px;
+	margin-top: 0;
 }
 
 #stock h2 img { 
@@ -193,8 +193,7 @@ label input {
 }
 
 #buy {
-	float: left;
-	margin-top: 20px;
+	margin-top: 90px;
 }
 
 #graph {
@@ -216,6 +215,10 @@ label input {
 	display: block;
 	color: #aaa;
 	margin-top: 120px;
+}
+
+#info {
+	float: left;
 }
 
 #details dt {

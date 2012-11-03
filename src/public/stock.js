@@ -15,35 +15,39 @@ $(function () {
 })
 
 function createChart (data) {
-	console.log(data)
 	if (!data.length) {
 		$("#graph").html("<strong>No trade history to plot</strong>");
 		return;
 	}
 	
-	var chart = new Highcharts.StockChart({
-		chart : {
-			renderTo : 'graph'
-		},
+	//give the chart a go
+	try {
+		var chart = new Highcharts.StockChart({
+			chart : {
+				renderTo : 'graph'
+			},
 
-		exporting: {
-			enabled: false
-		},
+			exporting: {
+				enabled: false
+			},
 
-		credits: {
-            enabled: false
-        },
+			credits: {
+	            enabled: false
+	        },
 
-		rangeSelector : {
-			selected : 1
-		},
-		
-		series : [{
-			name : stockID,
-			data : data,
-			tooltip: {
-				valueDecimals: 5
-			}
-		}]
-	});
+			rangeSelector : {
+				selected : 1
+			},
+			
+			series : [{
+				name : stockID,
+				data : data,
+				tooltip: {
+					valueDecimals: 5
+				}
+			}]
+		});
+	} catch(e) {
+		$("#graph").html("<strong>Error creating chart</strong>");
+	}
 }

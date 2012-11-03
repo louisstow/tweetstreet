@@ -10,8 +10,6 @@
 * getWorstTraders
 	- limit : Number = 10
 
-### trading/
-
 ### history/
 * latestTrades
 	- limit : Number
@@ -20,9 +18,6 @@
 
 * cron job to take last sale cost and save as dayCost
 * optimize IO to scale
-* add share on twitter links
 * allow people to buy credit
 * fix the IPO algorithm
-* fix marquee
-	- duplicate the ul so it continues. Make smoother with rAF
 	

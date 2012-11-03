@@ -9,25 +9,28 @@ block content
 	#stock
 		#graph
 
-		h2 
-			img(src= image)
-			span #{stockID}
-			span.money #{cost}
+		#info
+			-var url = "http://twitter.com/home?status=" + encodeURIComponent("@" + stockID + " You're worth $"+cost.toFixed(2)+" on http://TweetStreet.net/stock/" + stockID);
+			a.share(href=url) Let them know on Twitter
+			h2 
+				img(src= image)
+				span #{stockID}
+				span.money #{cost}
 
-		#details: dl
-			dt Tweets
-			dd #{tweets}
-			dt Following
-			dd #{following}
-			dt Followers
-			dd #{followers}
+			#details: dl
+				dt Tweets
+				dd #{tweets}
+				dt Following
+				dd #{following}
+				dt Followers
+				dd #{followers}
 
-		#buy.form
-			h3 Buy Stock
-			label Quantity
-				input.quantity(type='number', min='1', value='1')
-			label Unit price
-				input.cost(type='number', step='0.01', min='0.01', value=cost)
-			input.stock(type='hidden', value=stockID)
-			span#cost
-			button bid
+			#buy.form
+				h3 Buy Stock
+				label Quantity
+					input.quantity(type='number', min='1', value='1')
+				label Unit price
+					input.cost(type='number', step='0.01', min='0.01', value=cost)
+				input.stock(type='hidden', value=stockID)
+				span#cost
+				button bid

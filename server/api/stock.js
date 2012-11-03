@@ -69,15 +69,32 @@ exports.get = function(id, cb) {
 			stockID: id
 		}, this.slot());
 	}, function(account, result) {
-		if (!account || !result.length) {
-			console.log("NULL", account, result, id);
+		if (!result.length) {
+			console.log("No stock found in database", account, result, id);
 			cb && cb(null);
 			return;
 		}
 
 		result = result[0];
+		var data = {};
 
-		var data = {
+		//no twitter data, use what we have
+		if (!account || JSON.stringify(account) === "{}") {
+			
+			data.cost = result.cost;
+			data.dayCost = result.dayCost;
+			data.stockID = result.stockID;
+			data.status = "I don't talk much";
+			data.description = "?";
+			data.tweets = result.tweets;
+			data.followers = result.followers;
+			data.following = result.following;
+			data.image = result.image;
+
+			return cb && cb(data);
+		}
+
+		data = {
 			tweets: account.statuses_count,
 			followers: account.followers_count,
 			following: account.friends_count,

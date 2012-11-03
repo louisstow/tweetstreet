@@ -95,6 +95,13 @@ function startMarquee() {
 	var xspeed = 2;
 	var width = contents.outerWidth();
 
+	//slow down marquee on mouse over
+	contents.mouseover(function () {
+		xspeed = 0.5;
+	}).mouseout(function () {
+		xspeed = 2;
+	})
+
 	setInterval(function () {
 		//tick should be outside of render
 		x -= xspeed;
