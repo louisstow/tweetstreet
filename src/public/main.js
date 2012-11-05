@@ -180,11 +180,13 @@ function showError () {
 	return console.error(arguments);
 }
 
-function formatMoney(n, d, t) {
-	var c = 2, //if decimal is zero we must take it, it means user does not want to show any decimal
-	d = d || '.'; //if no decimal separator is passed we use the dot as default decimal separator (we MUST use a decimal separator)
+function formatMoney(n, c) {
+	//decimal places precision
+	c = c || 2;
 
-	t = t || ','; //if you don't want to use a thousands separator you can pass empty string as thousands_sep value
+	//seperator for decimal and 1000nds
+	var d = '.';
+	var t = ',';
 
 	sign = (n < 0) ? '-' : '',
 

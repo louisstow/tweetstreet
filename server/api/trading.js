@@ -38,7 +38,7 @@ exports.buy = function(stockID, user, quantity, cost, cb) {
 			stockID,
 			user,
 			quantity,
-			cost.toFixed(5),
+			cost.toFixed(3),
 			new Date
 		]], this.slot());
 

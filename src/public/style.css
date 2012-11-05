@@ -16,8 +16,8 @@ h1, h2, h3, h4 {
 	font-family: 'Archivo Narrow', sans-serif;
 }
 
-span.green { color: green; }
-span.red { color: red; }
+.green { color: green; }
+.red { color: red; }
 
 #marquee { 
 	border-bottom: 1px solid #999; 
@@ -233,6 +233,75 @@ label input {
 	margin: 0 15px 0 15px;
 	padding-right: 15px;
 	border-right: 1px solid #ccc;
+}
+
+#main table tr:nth-child(odd) {
+	background: #eee;
+}
+
+#main table tr:hover {
+	background: #DEECFF;
+}
+
+#main table tr.total {
+	background: #fff;
+	font-weight: 600;
+	font-size: 14px;
+	border-top: 4px double #CCC;
+}
+
+#main table tr.total td {
+	border: 0;
+}
+
+#main table {
+	border-collapse: collapse;
+	padding: 0;
+}
+
+#main td, #main th {
+	padding: 5px 10px;
+	border-right: 1px dashed #CCC;
+}
+
+#main th {
+	background: #fff;
+	text-align: left;
+	border-bottom: 1px solid #aaa;
+	font-size: 14px;
+}
+
+#main td:first-child {
+	color: #666;
+}
+
+#main td:last-child, #main th:last-child {
+	border-right: 0;
+}
+
+#main td.total, #main td.diff {
+	font-weight: 600;
+}
+
+#main table img {
+	vertical-align: middle;
+	margin-right: 5px;
+	width: 32px;
+	height: 32px;
+}
+
+#cost {
+	line-height: 35px;
+	color: red;
+}
+
+table input.quantity {
+	width: 50px;
+	margin-right: 5px;
+}
+
+table input.cost {
+	width: 75px;
 }
 
 footer {

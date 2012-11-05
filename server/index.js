@@ -59,7 +59,7 @@ function showPage(page, opts) {
 
 		//only check their money if logged in
 		if (values.logged) {
-			connection.query("SELECT money FROM users WHERE ?", {
+			connection.query("SELECT FORMAT(money, 2) as money FROM users WHERE ?", {
 				userID: values.user.userID
 			}, slut);
 		} else {
@@ -67,9 +67,10 @@ function showPage(page, opts) {
 		} 
 	}, function (result) {
 		if (result && result.length) {
-			opts.req.session.money = result[0].money;
+			opts.req.session.money = +result[0].money.replace(/,/g, "") || 0;
+			values.money = result[0].money;
 		}
-
+		
 		opts.res.render(page, values);
 	});
 	

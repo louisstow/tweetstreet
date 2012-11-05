@@ -12,6 +12,10 @@ $(function () {
 		success: createChart
 	});
 	
+	$("input.quantity, input.cost").change(function () {
+		var price = $("input.quantity").val() * $("input.cost").val();
+		$("#cost").text("-$" + formatMoney(price, 3));
+	});
 })
 
 function createChart (data) {

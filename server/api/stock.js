@@ -31,7 +31,7 @@ exports.create = function(opts, cb) {
 			tweets: account.statuses_count,
 			followers: account.followers_count,
 			following: account.friends_count,
-			cost: IPO.toFixed(5),
+			cost: IPO.toFixed(3),
 			dayCost: 0,
 			image: account.profile_image_url
 		};
@@ -50,7 +50,7 @@ exports.create = function(opts, cb) {
 				opts.twitter,
 				1, //PLEASE MAKE SURE TWEETSTREET = 1
 				100000,
-				IPO.toFixed(5),
+				IPO.toFixed(3),
 				new Date
 			]]);
 		});
@@ -122,14 +122,15 @@ exports.get = function(id, cb) {
 }
 
 exports.portfolio = function (id, cb) {
-	var q = conn.query("SELECT p.*, s.image, FORMAT(p.cost * p.quantity, 2) as total, FORMAT(p.cost, 2) as cost, FORMAT(s.cost, 2) as currentPrice \
+	var q = conn.query("SELECT p.*, DATE_FORMAT(created, '%e %b %l:%i%p') as created, s.image, FORMAT(p.cost * p.quantity, 2) as total, FORMAT(s.cost * p.quantity - p.cost * p.quantity, 2) as difference, FORMAT(p.cost, 2) as cost, FORMAT(s.cost, 2) as currentPrice \
 				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
 		userID: id
 	}, cb);
+	console.log(q.sql);
 }
 
 exports.getBuying = function (id, cb) {
-	conn.query("SELECT *, FORMAT(cost, 2) as cost\
+	conn.query("SELECT *, DATE_FORMAT(created, '%e %b %l:%i%p') as created, FORMAT(cost * quantity, 2) as total, FORMAT(cost, 2) as cost\
 		FROM buying WHERE ?", 
 		{buyerID: id}, 
 		cb
@@ -137,7 +138,7 @@ exports.getBuying = function (id, cb) {
 }
 
 exports.getSelling = function (id, cb) {
-	conn.query("SELECT *, FORMAT(cost, 2) as cost\
+	conn.query("SELECT *, DATE_FORMAT(created, '%e %b %l:%i%p') as created, FORMAT(cost * quantity, 2) as total, FORMAT(cost, 2) as cost\
 		FROM selling WHERE ?", 
 		{sellerID: id}, 
 		cb

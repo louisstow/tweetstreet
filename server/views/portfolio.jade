@@ -11,10 +11,11 @@ block content
 				tr
 					th Date
 					th Stock
-					th Cost
 					th Quantity
+					th Cost
 					th Total
 					th Current
+					th Worth
 					th Sell
 				each item in portfolio
 					tr
@@ -22,14 +23,17 @@ block content
 						td: a(href='/stock/'+item.stockID)
 							img(src=item.image)
 							span #{item.stockID}
-						td $#{item.cost}
+						
 						td #{item.quantity}
+						td $#{item.cost}
+						td.total $#{item.total}
 
-						td $#{item.total}
 						td $#{item.currentPrice}
+						td.diff $#{item.difference}
+
 						td.form(data-id='sell')
-							input.quantity(type='number', value='1')
-							input.cost(type='number', value=item.currentPrice)
+							input.quantity(type='number', value='1', min='1', max=item.quantity)
+							input.cost(type='number', value=item.currentPrice, step='0.001', min='0.001')
 							input.portfolioID(type='hidden', value=item.portfolioID)
 							button ask
 		else
@@ -45,15 +49,16 @@ block content
 					th Stock
 					th Quantity
 					th Cost
-					th Cancel
+					th Total
+
 				each item in buying
 					tr
 						td #{item.created}
 						td #{item.stockID}
-						td #{item.quantity}
-						td $#{item.cost}
-						td
-							button.cancel(data-id=item.tradeID) cancel
+						td.quantity #{item.quantity}
+						td.cost $#{item.cost}
+						td.total $#{item.total}
+
 		else
 			strong You do not have any bids
 
@@ -66,14 +71,15 @@ block content
 					th Stock
 					th Quantity
 					th Cost
-					th Cancel
+					th Total
+
 				each item in selling
 					tr
 						td #{item.created}
 						td #{item.stockID}
-						td #{item.quantity}
-						td $#{item.cost}
-						td
-							button.cancel(data-id=item.tradeID) cancel
+						td.quantity #{item.quantity}
+						td.cost $#{item.cost}
+						td.total $#{item.total}
+
 		else
 			strong You do not have any asks
