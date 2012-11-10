@@ -16,7 +16,6 @@
 
 ### misc
 
-* cron job to take last sale cost and save as dayCost
 * optimize IO to scale
 * allow people to buy credit
 * fix the IPO algorithm

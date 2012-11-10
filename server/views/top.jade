@@ -1,0 +1,21 @@
+extends layout
+
+block content
+	.column
+		h2 Legends
+		table
+			each item, i in top
+				tr
+					td #{i}
+					td.name #{item.userName}
+					td.price $#{item.money}
+
+
+	.column
+		h2 Washouts
+		table
+			each item, i in worst
+				tr
+					td #{i}
+					td.name #{item.userName}
+					td.price $#{item.money}

@@ -8,6 +8,14 @@ var conn = opts.conn;
 
 var stock = require("./stock").load(opts);
 
+exports.getTop = function (next) {
+	conn.query("SELECT userName, FORMAT(money, 2) as money FROM users ORDER BY money desc LIMIT 10", next);
+};
+
+exports.getWorst = function (next) {
+	conn.query("SELECT userName, FORMAT(money, 2) as money FROM users ORDER BY money asc LIMIT 10", next);
+};
+
 /**
 * Register user
 */
@@ -109,4 +117,5 @@ app.get("api/user/logout/", function (req, res) {
 });
 
 //end load
+return exports;
 };

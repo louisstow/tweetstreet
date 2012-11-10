@@ -124,6 +124,14 @@ app.get("/stock/:id", function (req, res) {
 	});
 });
 
+app.get("/instructions", function (req, res) {
+	showPage('instructions', {
+		req: req, 
+		res: res, 
+		title: 'Instructions' + title
+	});
+});
+
 app.get("/my-portfolio", function (req, res) {
 	if (!req.session.user) return res.redirect("/login");
 
@@ -147,6 +155,27 @@ app.get("/my-portfolio", function (req, res) {
 		showPage('portfolio', data);
 	}).error(function (e) {
 		console.log("GET PORTFOLIO", e);
+		res.send(500);
+	});
+});
+
+app.get("/top", function (req, res) {
+	var data = {
+		req: req,
+		res: res,
+		title: 'Top Traders'
+	};
+
+	ff(function () {
+		q.user.getTop(this.slot());
+	}, function (top) {
+		data.top = top;
+		q.user.getWorst(this.slot());
+	}, function (worst) {
+		data.worst = worst;
+		showPage('top', data);
+	}).error(function (e) {
+		console.log("GET TOP", e);
 		res.send(500);
 	});
 });
