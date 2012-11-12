@@ -1,5 +1,7 @@
 var ff = require("ff");
 var twitter = require("../twitter");
+var crypto = require("crypto");
+var SALT = "money";
 
 exports.load = function (opts) {
 //start load
@@ -9,11 +11,11 @@ var conn = opts.conn;
 var stock = require("./stock").load(opts);
 
 exports.getTop = function (next) {
-	conn.query("SELECT userName, FORMAT(money, 2) as money FROM users ORDER BY money desc LIMIT 10", next);
+	conn.query("SELECT userName, FORMAT(money, 2) as money FROM users WHERE userID > 1 ORDER BY money desc LIMIT 10", next);
 };
 
 exports.getWorst = function (next) {
-	conn.query("SELECT userName, FORMAT(money, 2) as money FROM users ORDER BY money asc LIMIT 10", next);
+	conn.query("SELECT userName, FORMAT(money, 2) as money FROM users WHERE userID > 1 ORDER BY money asc LIMIT 10 ", next);
 };
 
 /**
@@ -35,6 +37,10 @@ app.post("/api/user/", function (req, res, err) {
 	//no spaces in username
 	body.name = body.name.trim();
 
+	var hash = crypto.createHash("sha1");
+	hash.update(SALT + body.pass);
+	var encryptedPass = hash.digest("base64"); 
+
 	ff(function () {
 		//check existing user
 		conn.query("SELECT userID FROM users WHERE ? OR ?", {
@@ -52,7 +58,7 @@ app.post("/api/user/", function (req, res, err) {
 		conn.query("INSERT INTO users VALUES (DEFAULT, ?)", [[
 			body.name,
 			body.email,
-			body.pass,
+			encryptedPass,
 			10000, //a million cents = 10k
 			new Date
 		]], this.slot());
@@ -83,10 +89,13 @@ app.post("/api/user/", function (req, res, err) {
 app.post("/api/user/login/", function (req, res) {
 	var user = req.body.user;
 	var pass = req.body.pass;
+	var hash = crypto.createHash("sha1");
+	hash.update(SALT + pass);
+	var encryptedPass = hash.digest("base64");
 
 	conn.query("SELECT userID, money, email FROM users WHERE ? AND ? LIMIT 1", [
 		{userName: user},
-		{pass: pass}
+		{pass: encryptedPass}
 	], function (err, result) {
 		console.log("POST LOGIN", err, result);
 
@@ -102,7 +111,7 @@ app.post("/api/user/login/", function (req, res) {
 				email: result.email
 			});
 		} else {
-			console.log("NO USER", result, user, pass);
+			console.log("NO USER", result, user, encryptedPass);
 			res.json({error: "No user found"});
 		}
 	});

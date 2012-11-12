@@ -92,14 +92,14 @@ function startMarquee() {
 	var contents = $("#marquee ul");
 	var contents2 = contents.clone().appendTo("#marquee");
 	var x = 0;
-	var xspeed = 2;
+	var xspeed = 1.5;
 	var width = contents.outerWidth();
 
 	//slow down marquee on mouse over
 	contents.mouseover(function () {
 		xspeed = 0.5;
 	}).mouseout(function () {
-		xspeed = 2;
+		xspeed = 1.5;
 	})
 
 	setInterval(function () {

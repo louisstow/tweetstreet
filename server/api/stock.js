@@ -126,7 +126,6 @@ exports.portfolio = function (id, cb) {
 				FROM portfolio p INNER JOIN stocks s ON p.stockID = s.stockID WHERE ?", {
 		userID: id
 	}, cb);
-	console.log(q.sql);
 }
 
 exports.getBuying = function (id, cb) {
