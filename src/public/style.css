@@ -142,9 +142,12 @@ label input {
 	float: right;
 }
 
+#wrapper { text-align: center; }
+
 .column {
 	margin-right: 20px;
-	float: left;
+	text-align: left;
+	display: inline-block;
 }
 
 .column ul {
@@ -204,6 +207,13 @@ label input {
 
 #buy {
 	margin-top: 90px;
+}
+
+#message {
+	text-align: center;
+	font-weight: 600;
+	padding: 10px;
+	color: #444;
 }
 
 #graph {
