@@ -1,8 +1,12 @@
 var mysql = require("mysql");
 
-var connString = "mysql://root@localhost/tweetdb";
-var conn = mysql.createConnection(connString);
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : 'tweet on the street',
+  database : 'tweetdb'
+});
 
-conn.query("UPDATE stocks SET dayCost = cost", function () {
+connection.query("UPDATE stocks SET dayCost = cost", function () {
 	process.exit(0);	
 });

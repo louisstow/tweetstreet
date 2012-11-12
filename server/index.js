@@ -192,3 +192,9 @@ app.get("/top", function (req, res) {
 		res.send(500);
 	});
 });
+
+//logout page
+app.get("/logout", function (req, res) {
+	req.session = null;
+	res.redirect("/");
+});
