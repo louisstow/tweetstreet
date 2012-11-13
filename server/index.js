@@ -118,6 +118,11 @@ app.get("/register", function (req, res) {
 });
 
 app.get("/stock/:id", function (req, res) {
+	if (!req.params.id) return res.send(404);
+
+	if (req.params.id.charAt(0) === '@')
+		req.params.id = req.params.id.substr(1);
+
 	q.stock.get(req.params.id, function (data) {
 		if (!data) {
 			
