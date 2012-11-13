@@ -247,11 +247,10 @@ label input {
 }
 
 #details dd {
-	width: 50px;
 	text-align: right; 
 	float: left;
 	margin: 0 15px 0 15px;
-	padding-right: 15px;
+	padding-right: 10px;
 	border-right: 1px solid #ccc;
 }
 

@@ -11,6 +11,10 @@ var conn = opts.conn;
 * Create a Stock
 */
 exports.create = function(opts, cb) {
+	//trim the @
+	if (opts.twitter.charAt(0) === '@') 
+		opts.twitter = opts.twitter.substr(1);
+
 	ff(function () {
 		twitter.getAccount(opts.twitter, this.slotPlain());
 	}, function (account) {
