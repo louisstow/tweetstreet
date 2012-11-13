@@ -10,7 +10,7 @@ block content
 		#graph
 
 		#info
-			-var url = "http://twitter.com/home?status=" + encodeURIComponent("@" + stockID + " You're worth $"+(cost).toFixed(2)+" on http://TweetStreet.net/stock/" + stockID);
+			-var url = "http://twitter.com/home?status=" + encodeURIComponent("@" + stockID + " You're worth $"+Number(cost).toFixed(2)+" on http://TweetStreet.net/stock/" + stockID);
 			a.share(href=url) Let them know on Twitter
 			h2 
 				img(src= image)

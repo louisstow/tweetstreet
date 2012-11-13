@@ -25,9 +25,10 @@ exports.create = function(opts, cb) {
 		}
 
 		//calculate the IPO of the account
-		var IPO = (account.followers_count / account.friends_count) * 
-				  (account.followers_count / account.statuses_count) * 
-				   account.followers_count;
+		var fc = Math.max(account.followers_count, 1);
+		var fw = Math.max(account.friends_count, 1);
+		
+		var IPO = (fc + (fc / fw) * 10) / 100;
 
 		//create the data to save
 		var data = {

@@ -20,15 +20,23 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.set('view options', {layout: false});
 
-app.listen(5657);
+app.listen(3000);
 
 var title = "Tweet Street - Stock Exchange for Twitter";
 
 /**
 * Initialise MySQL
 */
-var connString = "mysql://root@localhost/tweetdb";
-var connection = mysql.createConnection(connString);
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : 'tweet on the street',
+  database : 'tweetdb'
+});
+
+connection.connect(function (err) {
+	console.log("ERR", err);
+});
 
 //for each api, require it and pass in the objects
 var apis = ["stock", "user", "trading", "history"];
@@ -80,6 +88,11 @@ function showPage(page, opts) {
 /**
 * Setup pages
 */ 
+app.get("/test", function (req, res) {
+	console.log("TEST");
+	res.send(404);
+});
+
 app.get("/", function (req, res) {
 	showPage('home', {
 		req: req, 
@@ -183,4 +196,10 @@ app.get("/top", function (req, res) {
 		console.log("GET TOP", e);
 		res.send(500);
 	});
+});
+
+//logout page
+app.get("/logout", function (req, res) {
+	req.session = null;
+	res.redirect("/");
 });
