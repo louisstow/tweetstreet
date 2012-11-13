@@ -193,8 +193,20 @@ app.get("/top", function (req, res) {
 	});
 });
 
+app.get("/about", function (req, res) {
+	showPage("about", {
+		req: req,
+		res: res,
+		title: 'About Tweet Street'
+	});
+});
+
 //logout page
 app.get("/logout", function (req, res) {
-	req.session = null;
+	if (req.session) {
+		res.clearCookie('auth');
+		req.session.destroy(function() {});
+		req.session = null;
+	}
 	res.redirect("/");
 });

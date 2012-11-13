@@ -1,0 +1,13 @@
+extends layout
+
+append scripts
+	script(src='/disq.js')
+
+block content
+	h2 About
+	p Tweet Street was created with the idea of merging a stock market with something other than companies (in this case Twitter Accounts). It took a few spare weekends to complete. Built with Node.js, Express.js, MySQL and the fabulous <a href="https://github.com/felixge/node-mysql">Node-MySQL</a> library.
+
+	p I am <a href='http://louisstowasser.com'>Louis Stowasser</a>. I work for <a href='http://gameclosure.com'>Game Closure</a>.
+
+	#disqus_thread
+

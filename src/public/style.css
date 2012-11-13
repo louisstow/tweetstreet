@@ -138,6 +138,11 @@ label input {
 	float: right;
 }
 
+label em {
+	font-size: 12px;
+	color: red;
+}
+
 .form button {
 	float: right;
 }

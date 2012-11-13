@@ -2,13 +2,13 @@ extends layout
 
 block content
 	#register.form
-		label Username
-			input.name(type='text')
-		label Password
-			input.pass(type='password')
+		label Username<em>*</em>
+			input.name(type='text',tabindex='2')
+		label Password<em>*</em>
+			input.pass(type='password',tabindex='3')
 		label Email
-			input.email(type='text')
+			input.email(type='text',tabindex='4')
 		label Twitter
-			input.twitter(type='text')
+			input.twitter(type='text',tabindex='5')
 
 		button Register
