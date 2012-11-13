@@ -30,7 +30,7 @@ var title = "Tweet Street - Stock Exchange for Twitter";
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'tweet on the street',
+  password : '',
   database : 'tweetdb'
 });
 
@@ -127,10 +127,17 @@ app.get("/stock/:id", function (req, res) {
 		if (!data) {
 			
 			q.stock.create({twitter: req.params.id}, function(data) {
+				data = data || {};
 				data.req = req;
 				data.res = res;
-				data.title = data.stockID + ' @ ' + title;
-				showPage('stock', data);
+
+				if (data.stockID) {
+					data.title = data.stockID + ' @ ' + title;
+					showPage('stock', data);
+				} else {
+					data.title = "Stock not found " + title;
+					showPage('404', data);
+				}
 			});
 		} else {
 			data.req = req;

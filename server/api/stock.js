@@ -19,11 +19,11 @@ exports.create = function(opts, cb) {
 		twitter.getAccount(opts.twitter, this.slotPlain());
 	}, function (account) {
 
-		if (!account) {
+		if (!account || account.statusCode === 404) {
 			cb && cb(null);
 			return;
 		}
-
+		
 		//calculate the IPO of the account
 		var fc = Math.max(account.followers_count, 1);
 		var fw = Math.max(account.friends_count, 1);
