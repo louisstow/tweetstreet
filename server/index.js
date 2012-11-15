@@ -188,7 +188,7 @@ app.get("/top", function (req, res) {
 	var data = {
 		req: req,
 		res: res,
-		title: 'Top Traders'
+		title: 'Top Traders @ ' + title
 	};
 
 	ff(function () {
@@ -202,6 +202,21 @@ app.get("/top", function (req, res) {
 	}).error(function (e) {
 		console.log("GET TOP", e);
 		res.send(500);
+	});
+});
+
+app.get("/latest", function (req, res) {
+	var data = {
+		req: req,
+		res: res,
+		title: 'Latest Trades @ ' + title
+	};
+
+	ff(function () {
+		q.history.getLatest(this.slot());
+	}, function (latest) {
+		data.latest = latest;
+		showPage("latest", data);
 	});
 });
 
