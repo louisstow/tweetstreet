@@ -1,0 +1,25 @@
+extends layout
+
+block content
+	#wrapper: .column
+		h2 Latest Trades
+		table
+			tr
+				th Date
+				th Stock
+				th Buyer
+				th Seller
+				th Quantity
+				th Price
+				th Total
+			each item in latest
+				tr
+					td #{item.created}
+					td: a(href='/stock/'+item.stockID)
+						img(src=item.image)
+						span #{item.stockID}
+					td #{item.buyer}
+					td #{item.seller}
+					td #{item.quantity}
+					td $#{item.price}
+					td.total $#{item.total}
