@@ -30,7 +30,7 @@ var title = "Tweet Street - Stock Exchange for Twitter";
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : '',
+  password : 'tweet on the street',
   database : 'tweetdb'
 });
 

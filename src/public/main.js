@@ -39,7 +39,7 @@ var FORM = {
 				return $("#message").html(resp.error);
 			}
 
-			//window.location.reload();
+			window.location.reload();
 		}
 	}
 };
